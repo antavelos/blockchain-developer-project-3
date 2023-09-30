@@ -310,9 +310,9 @@ contract SupplyChain {
     function shipItem(uint _upc) public {
         Item storage item = items[_upc];
 
-        require(item.itemState == State.Sold);
+        require(item.itemState == State.Sold, "item is not sod yet");
 
-        require(msg.sender == item.distributorID);
+        require(msg.sender == item.distributorID, "distributor is required for this action");
 
         item.itemState = State.Shipped;
 
@@ -330,7 +330,7 @@ contract SupplyChain {
 
         // check if is retailer
 
-        require(item.itemState == State.Shipped);
+        require(item.itemState == State.Shipped, "item is not shipped yet");
 
         item.ownerID = msg.sender;
         item.retailerID = msg.sender;
