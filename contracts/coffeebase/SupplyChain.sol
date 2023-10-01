@@ -1,11 +1,17 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
+import '../coffeecore/Ownable.sol';
+import '../coffeeaccesscontrol/FarmerRole.sol';
+import '../coffeeaccesscontrol/DistributorRole.sol';
+import '../coffeeaccesscontrol/RetailerRole.sol';
+import '../coffeeaccesscontrol/ConsumerRole.sol';
+
 // Define a contract 'Supplychain'
-contract SupplyChain {
+contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, ConsumerRole {
 
     // Define 'owner'
-    address owner;
+    // address owner;
 
     // Define a variable called 'upc' for Universal Product Code (UPC)
     uint upc;
@@ -93,11 +99,16 @@ contract SupplyChain {
     event Received(uint upc);
     event Purchased(uint upc);
 
+    // FarmerRole private farmerRole;
+    // DistributorRole private distributorRole;
+    // RetailerRole private retailerRole;
+    // ConsumerRole private consumerRole;
+
     // Define a modifer that checks to see if msg.sender == owner of the contract
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
-    }
+    // modifier onlyOwner() {
+    //     require(msg.sender == owner);
+    //     _;
+    // }
 
     // Define a modifer that verifies the Caller
     // modifier verifyCaller (address _address) {
@@ -171,14 +182,19 @@ contract SupplyChain {
     // and set 'sku' to 1
     // and set 'upc' to 1
     constructor() public payable {
-        owner = msg.sender;
+        // Ownable();
+        // FarmerRole();
+        // DistributorRole();
+        // RetailerRole();
+        // ConsumerRole();
+
         sku = 1;
         upc = 1;
     }
 
     // Define a function 'kill' if required
     function kill() public {
-        if (msg.sender == owner) {
+        if (isOwner()) {
             selfdestruct(owner);
         }
     }
@@ -186,22 +202,24 @@ contract SupplyChain {
     // Define a function 'harvestItem' that allows a farmer to mark an item 'Harvested'
     function harvestItem(
         uint _upc,
-        address _originFarmerID,
+        // address _originFarmerID,
         string _originFarmName,
         string _originFarmInformation,
         string _originFarmLatitude,
         string _originFarmLongitude,
         string _productNotes
     )
-        public
+        public onlyFarmer
     {
         // Add the new item as part of Harvest
+
+        require(items[_upc].upc == 0, "upc already exists");
 
         items[_upc] = Item({
             sku: sku,
             upc: _upc,
-            ownerID: _originFarmerID,
-            originFarmerID: _originFarmerID,
+            ownerID: msg.sender,
+            originFarmerID: msg.sender,
             originFarmName: _originFarmName,
             originFarmInformation: _originFarmInformation,
             originFarmLatitude: _originFarmLatitude,
@@ -225,10 +243,10 @@ contract SupplyChain {
     // Define a function 'processtItem' that allows a farmer to mark an item 'Processed'
     // Call modifier to check if upc has passed previous supply chain stage
     // Call modifier to verify caller of this function
-    function processItem(uint _upc) public {
+    function processItem(uint _upc) public onlyFarmer{
         Item storage item = items[_upc];
 
-        require(msg.sender == item.originFarmerID, "origin farmer is required for this action");
+        require(msg.sender == item.originFarmerID, "not the original farmer");
 
         require(item.itemState == State.Harvested, "item is not harvested yet");
 
@@ -242,10 +260,10 @@ contract SupplyChain {
     // Define a function 'packItem' that allows a farmer to mark an item 'Packed'
     // Call modifier to check if upc has passed previous supply chain stage
     // Call modifier to verify caller of this function
-    function packItem(uint _upc) public {
+    function packItem(uint _upc) public onlyFarmer {
         Item storage item = items[_upc];
 
-        require(msg.sender == item.originFarmerID, "origin farmer is required for this action");
+        require(msg.sender == item.originFarmerID, "not the original farmer");
 
         require(item.itemState == State.Processed, "item is not processed yet");
 
@@ -259,10 +277,10 @@ contract SupplyChain {
     // Define a function 'sellItem' that allows a farmer to mark an item 'ForSale'
     // Call modifier to check if upc has passed previous supply chain stage
     // Call modifier to verify caller of this function
-    function sellItem(uint _upc, uint _price) public {
+    function sellItem(uint _upc, uint _price) public onlyFarmer {
         Item storage item = items[_upc];
 
-        require(msg.sender == item.originFarmerID, "origin farmer is required for this action");
+        require(msg.sender == item.originFarmerID, "not the original farmer");
 
         require(item.itemState == State.Packed, "item is not packed yet");
 
@@ -280,10 +298,8 @@ contract SupplyChain {
     // Call modifier to check if upc has passed previous supply chain stage
     // Call modifer to check if buyer has paid enough
     // Call modifer to send any excess ether back to buyer
-    function buyItem(uint _upc) public payable {
+    function buyItem(uint _upc) public payable onlyDistributor {
         Item storage item = items[_upc];
-
-        // check if is distributor
 
         require(item.itemState == State.ForSale, "item is not for sale yet");
 
@@ -307,12 +323,12 @@ contract SupplyChain {
     // Use the above modifers to check if the item is sold
     // Call modifier to check if upc has passed previous supply chain stage
     // Call modifier to verify caller of this function
-    function shipItem(uint _upc) public {
+    function shipItem(uint _upc) public onlyDistributor{
         Item storage item = items[_upc];
 
-        require(item.itemState == State.Sold, "item is not sod yet");
+        require(msg.sender == item.distributorID, "not the original distributor");
 
-        require(msg.sender == item.distributorID, "distributor is required for this action");
+        require(item.itemState == State.Sold, "item is not sold yet");
 
         item.itemState = State.Shipped;
 
@@ -325,10 +341,8 @@ contract SupplyChain {
     // Use the above modifiers to check if the item is shipped
     // Call modifier to check if upc has passed previous supply chain stage
     // Access Control List enforced by calling Smart Contract / DApp
-    function receiveItem(uint _upc) public {
+    function receiveItem(uint _upc) public onlyRetailer {
         Item storage item = items[_upc];
-
-        // check if is retailer
 
         require(item.itemState == State.Shipped, "item is not shipped yet");
 
@@ -345,12 +359,10 @@ contract SupplyChain {
     // Use the above modifiers to check if the item is received
     // Call modifier to check if upc has passed previous supply chain stage
     // Access Control List enforced by calling Smart Contract / DApp
-    function purchaseItem(uint _upc) public {
+    function purchaseItem(uint _upc) public onlyConsumer {
         Item storage item = items[_upc];
 
-        // check if is consumer
-
-        require(item.itemState == State.Received);
+        require(item.itemState == State.Received, "item is not received yet by the retailer");
 
         item.ownerID = msg.sender;
         item.consumerID = msg.sender;
@@ -417,25 +429,5 @@ contract SupplyChain {
 
     function fetchItem(uint _upc) public view returns (Item) {
         return items[_upc];
-    }
-
-    function stateToString(uint state) external pure returns (string) {
-        if (state == uint(State.Harvested)) {
-            return "Harvested";
-        } else if (state == uint(State.Processed)) {
-            return "Processed";
-        } else if (state == uint(State.Packed)) {
-            return "Packed";
-        } else if (state == uint(State.ForSale)) {
-            return "ForSale";
-        } else if (state == uint(State.Sold)) {
-            return "Sold";
-        } else if (state == uint(State.Shipped)) {
-            return "Shipped";
-        } else if (state == uint(State.Received)) {
-            return "Received";
-        } else if (state == uint(State.Purchased)) {
-            return "Purchased";
-        }
     }
 }

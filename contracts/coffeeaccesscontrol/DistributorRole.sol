@@ -21,7 +21,7 @@ contract DistributorRole {
 
     // Define a modifier that checks to see if msg.sender has the appropriate role
     modifier onlyDistributor() {
-        require(isDistributor(msg.sender));
+        require(isDistributor(msg.sender), "not a distributor");
         _;
     }
 
@@ -31,7 +31,7 @@ contract DistributorRole {
     }
 
     // Define a function 'addDistributor' that adds this role
-    function addDistributor(address account) public onlyDistributor {
+    function addDistributor(address account) public {
         _addDistributor(account);
     }
 
@@ -42,7 +42,7 @@ contract DistributorRole {
 
     // Define an internal function '_addDistributor' to add this role, called by 'addDistributor'
     function _addDistributor(address account) internal {
-        distributors.has(account);
+        distributors.add(account);
         emit DistributorAdded(account);
     }
 
