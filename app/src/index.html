@@ -13,15 +13,14 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary bg-dark" aria-label="Thirteenth navbar example">
-      <div class="container">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample11" aria-controls="navbarsExample11" aria-expanded="false" aria-label="Toggle navigation">
+  <nav class="navbar navbar-expand-lg bg-body-tertiary bg-dark" aria-label="Thirteenth navbar example">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample11" aria-controls="navbarsExample11" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse d-lg-flex" id="navbarsExample11">
         <i class="bi bi-cup-hot-fill" style="margin-right: 5px;"></i>
-
         <a class="navbar-brand col-lg-3 me-0" href="#">Fair Trade Coffee | On Ethereum Blockchain</a>
         <ul class="navbar-nav col-lg-6 justify-content-lg-center">
         </ul>
@@ -29,10 +28,10 @@
           <div class="nav-item dropdown">
             <a class="nav-link dropdown-toggle dropend" href="#" data-bs-toggle="dropdown" aria-expanded="false">Register account</a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">New Farmer</a></li>
-              <li><a class="dropdown-item" href="#">New Distributor</a></li>
-              <li><a class="dropdown-item" href="#">New Retailer</a></li>
-              <li><a class="dropdown-item" href="#">New Consumer</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newFarmerModal">New Farmer</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newDistributorModal">New Distributor</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newRetailerModal">New Retailer</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newConsumerModal">New Consumer</a></li>
             </ul>
           </div>
         </div>
@@ -40,44 +39,47 @@
     </div>
   </nav>
 
-  <div class="container"">
+  <div class="container">
     <div class="row gx-5">
       <div class="col-4">
         <form class="d-flex mt-3" role="search">
-          <input class="form-control me-2" type="search" placeholder="Fetch product by UPC" aria-label="Search">
-          <button class="btn btn-outline-success" type="submit">Fetch</button>
+          <input id="upcFetchInput" class="form-control me-2" type="number" placeholder="Fetch product by UPC" aria-label="Search">
+          <button id="upcFetchInputButton" class="btn btn-outline-primary">Fetch</button>
         </form>
       </div>
       <!-- <div class="col-9"></div> -->
       <div class="col-8">
-        <button type="button" class="btn btn-outline-dark mt-3 float-end">New harvest</button>
+        <button id="newHarvestButton" type="button" class="btn btn-outline-primary mt-3 float-end">New harvest</button>
       </div>
     </div>
     <div class="row mt-3 gx-5" style="background-color: #f8f8f8; padding-bottom: 20px; padding-top: 20px;">
       <div class="col-8">
-        <h3 class="">Best beans for Espresso</h3>
+        <h3 id="itemProductNotes" class="">Best beans for Espresso</h3>
           <div class="input-group mb-3">
             <span class="input-group-text">SKU</span>
-            <input type="text" class="form-control" value="1" disabled>
+            <input id="itemSKU" type="text" class="form-control" value="1" disabled>
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">UPC</span>
-            <input type="text" class="form-control" value="1" disabled>
+            <input id="itemUPC" type="text" class="form-control" value="1" disabled>
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">Price</span>
-            <input type="text" class="form-control" value="10" disabled>
-            <span class="input-group-text">ETH</span>
+            <input id="itemProductPrice" type="text" class="form-control" value="10" disabled>
+            <span class="input-group-text">wei</span>
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text">State</span>
+            <input id="itemState" type="text" class="form-control" value="10" disabled>
           </div>
           <div>
-
-            <button type="button" class="btn btn-outline-success">Process</button>
-            <button type="button" class="btn btn-outline-success">Pack</button>
-            <button type="button" class="btn btn-outline-success">Sell</button>
-            <button type="button" class="btn btn-outline-success">Buy</button>
-            <button type="button" class="btn btn-outline-success">Ship</button>
-            <button type="button" class="btn btn-outline-success">Receive</button>
-            <button type="button" class="btn btn-outline-success">Purchase</button>
+            <button id="processButton" type="button" class="btn btn-outline-primary">Process</button>
+            <button id="packButton" type="button" class="btn btn-outline-primary">Pack</button>
+            <button id="sellButton" type="button" class="btn btn-outline-primary">Sell</button>
+            <button id="buyButton" type="button" class="btn btn-outline-primary">Buy</button>
+            <button id="shipButton" type="button" class="btn btn-outline-primary">Ship</button>
+            <button id="receiveButton" type="button" class="btn btn-outline-primary">Receive</button>
+            <button id="purchaseButton" type="button" class="btn btn-outline-primary">Purchase</button>
           </div>
           <hr>
           <div class="accordion mt-3" id="accordionPanelsStayOpenExample">
@@ -87,23 +89,23 @@
                   Farm
                 </button>
               </h2>
-              <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+              <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse hide">
                 <div class="accordion-body">
                   <div class="input-group mb-3">
                     <span class="input-group-text">Name</span>
-                    <input type="text" class="form-control" value="John Doe" disabled>
+                    <input id="itemFarmName" type="text" class="form-control" value="John Doe" disabled>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Details</span>
-                    <input type="text" class="form-control" value="Yarra Valley" disabled>
+                    <input id="itemFarmInfo" type="text" class="form-control" value="Yarra Valley" disabled>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Latitude</span>
-                    <input type="text" class="form-control" value="-38.239770" disabled>
+                    <input id="itemFarmLatitude" type="text" class="form-control" value="-38.239770" disabled>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Longitude</span>
-                    <input type="text" class="form-control" value="144.341490" disabled>
+                    <input id="itemFarmLongitude" type="text" class="form-control" value="144.341490" disabled>
                   </div>
                 </div>
               </div>
@@ -118,19 +120,23 @@
                 <div class="accordion-body">
                   <div class="input-group mb-3">
                     <span class="input-group-text">Origin Farmer</span>
-                    <input type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <input id="itemFarmer" type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <span id="itemFarmerIsOwner" class="input-group-text" hidden>Owner</span>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Distributor</span>
-                    <input type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <input id="itemDistributor" type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <span id="itemDistributorIsOwner" class="input-group-text" hidden>Owner</span>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Retailer</span>
-                    <input type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <input id="itemRetailer" type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <span id="itemRetailerIsOwner" class="input-group-text" hidden>Owner</span>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Consumer</span>
-                    <input type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <input id="itemConsumer" type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <span id="itemConsumerIsOwner" class="input-group-text" hidden>Owner</span>
                   </div>
                 </div>
               </div>
@@ -151,7 +157,7 @@
                         <th scope="col">Transaction Hash</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="txHistoryTable">
                       <tr>
                         <th scope="row">1</th>
                         <td>Harvested</td>
@@ -173,15 +179,172 @@
     </div>
   </div>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="index.js"></script>
-    <style>
-      body {
-        background-color:#fff;
-        font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif';
-        color: #212121;
-      }
-    </style>
+  <!-- New harvest modal -->
+  <div class="modal fade" id="newHarvestModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newHarvestLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="newHarvestLabel">New harvest</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group mb-3">
+            <span class="input-group-text">Product UPC</span>
+            <input id="newHarvestUPC" type="number" class="form-control" placeholder="i.e. 1" value="1">
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text">Product notes</span>
+            <input id="newHarvestProductNotes" type="text" class="form-control" placeholder="i.e. Best beans for Espresso" value="Best beans for Espresso">
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text">Farm name</span>
+            <input id="newHarvestFarmName" type="text" class="form-control" placeholder="i.e. John Doe" value="John Doe">
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text">Farm details</span>
+            <input id="newHarvestFarmInfo" type="text" class="form-control" placeholder="i.e. Yarra Valley" value="Yarra Valley">
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text">Latitude</span>
+            <input id="newHarvestFarmLatitude"type="text" class="form-control" placeholder="i.e. -38.239770" value="-38.239770">
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text">Longitude</span>
+            <input id="newHarvestFarmLongitude" type="text" class="form-control" placeholder="i.e. 144.341490" value="144.341490">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button id="newHarvestSaveButton" type="button" class="btn btn-outline-primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New farmer modal -->
+  <div class="modal fade" id="newFarmerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newFarmerLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="newFarmerLabel">New farmer</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group mb-3">
+            <span class="input-group-text">Account</span>
+            <input id="newFarmerAccount" type="text" class="form-control" placeholder="i.e. 0x99c289eb2aacec289631a5ddf62cf27a63d4494f">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-outline-primary" onclick="addNewFarmer">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New distributor modal -->
+  <div class="modal fade" id="newDistributorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newDistributorLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="newDistributorLabel">New distributor</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group mb-3">
+            <span class="input-group-text">Account</span>
+            <input id="newDistributorAccount" type="text" class="form-control" placeholder="i.e. 0x99c289eb2aacec289631a5ddf62cf27a63d4494f">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-outline-primary" onclick="addNewDistributor">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New retailer modal -->
+  <div class="modal fade" id="newRetailerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newRetailerLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="newRetailerLabel">New retailer</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group mb-3">
+            <span class="input-group-text">Account</span>
+            <input id="newRetailerAccount" type="text" class="form-control" placeholder="i.e. 0x99c289eb2aacec289631a5ddf62cf27a63d4494f">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-outline-primary" onclick="addNewRetailer">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New consumer modal -->
+  <div class="modal fade" id="newConsumerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newConsumerLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="newConsumerLabel">New consumer</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group mb-3">
+            <span class="input-group-text">Account</span>
+            <input id="newConsumerAccount" type="text" class="form-control" placeholder="i.e. 0x99c289eb2aacec289631a5ddf62cf27a63d4494f">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-outline-primary" onclick="addNewConsumer">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success toast  -->
+  <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+    <div id="successToast" class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">Success</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div id="successToastBody" class="toast-body">
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Error toast  -->
+  <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+    <div id="errorToast" class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">Error</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div id="errorToastBody" class="toast-body">
+
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="index.js"></script>
+  <style>
+    body {
+      background-color:#fff;
+      font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif';
+      color: #212121;
+    }
+  </style>
 </body>
 
 </html>

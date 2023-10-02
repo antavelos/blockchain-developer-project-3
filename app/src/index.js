@@ -3,303 +3,346 @@ import supplyChainArtifact from "../../build/contracts/SupplyChain.json";
 
 const emptyAddress = "0x0000000000000000000000000000000000000000"
 
+const parseError = err => {
+  try {
+    return err.message.split('message')[1].split('code')[0].slice(3).slice(0, -3)
+  } catch {
+    return err.message;
+  }
+};
+
+const stateToString = (state) => {
+  if (state == 0) {
+      return "Harvested";
+  } else if (state == 1) {
+      return "Processed";
+  } else if (state == 2) {
+      return "Packed";
+  } else if (state == 3) {
+      return "ForSale";
+  } else if (state == 4) {
+      return "Sold";
+  } else if (state == 5) {
+      return "Shipped";
+  } else if (state == 6) {
+      return "Received";
+  } else if (state == 7) {
+      return "Purchased";
+  }
+};
+
 const App = {
   web3: null,
   account: null,
   meta: null,
+  accountIsFarmer: false,
+  accountIsDistributor: false,
+  accountIsRetailer: false,
+  accountIsConsumer: false,
 
-  contracts: {},
-  sku: 0,
-  upc: 0,
-  metamaskAccountID: emptyAddress,
-  ownerID: emptyAddress,
-  originFarmerID: emptyAddress,
-  originFarmName: null,
-  originFarmInformation: null,
-  originFarmLatitude: null,
-  originFarmLongitude: null,
-  productNotes: null,
-  productPrice: 0,
-  distributorID: emptyAddress,
-  retailerID: emptyAddress,
-  consumerID: emptyAddress,
+  // elements
+  $upcFetchInputButton: document.getElementById("upcFetchInputButton"),
+  $upcFetchInput: document.getElementById("upcFetchInput"),
+  $newHarvestButton: document.getElementById("newHarvestButton"),
+  $newHarvestSaveButton: document.getElementById("newHarvestSaveButton"),
+  newHarvestModal: new bootstrap.Modal('#newHarvestModal'),
+  successToast: new bootstrap.Toast('#successToast'),
+  $successToastBody: document.getElementById('successToastBody'),
+  errorToast: new bootstrap.Toast('#errorToast'),
+  $errorToastBody: document.getElementById('errorToastBody'),
 
-  readForm: function () {
-    App.sku = $("#sku").val();
-    App.upc = $("#upc").val();
-    App.ownerID = $("#ownerID").val();
-    App.originFarmerID = $("#originFarmerID").val();
-    App.originFarmName = $("#originFarmName").val();
-    App.originFarmInformation = $("#originFarmInformation").val();
-    App.originFarmLatitude = $("#originFarmLatitude").val();
-    App.originFarmLongitude = $("#originFarmLongitude").val();
-    App.productNotes = $("#productNotes").val();
-    App.productPrice = $("#productPrice").val();
-    App.distributorID = $("#distributorID").val();
-    App.retailerID = $("#retailerID").val();
-    App.consumerID = $("#consumerID").val();
+  // new harvest form elements
+  $newHarvestUPC: document.getElementById("newHarvestUPC"),
+  $newHarvestProductNotes: document.getElementById("newHarvestProductNotes"),
+  $newHarvestFarmName: document.getElementById("newHarvestFarmName"),
+  $newHarvestFarmInfo: document.getElementById("newHarvestFarmInfo"),
+  $newHarvestLatitude: document.getElementById("newHarvestFarmLatitude"),
+  $newHarvestLongitude: document.getElementById("newHarvestFarmLongitude"),
 
-    console.log(
-      App.sku,
-      App.upc,
-      App.ownerID,
-      App.originFarmerID,
-      App.originFarmName,
-      App.originFarmInformation,
-      App.originFarmLatitude,
-      App.originFarmLongitude,
-      App.productNotes,
-      App.productPrice,
-      App.distributorID,
-      App.retailerID,
-      App.consumerID
-    );
+  // item details elements
+  $itemSKU: document.getElementById('itemSKU'),
+  $itemUPC: document.getElementById('itemUPC'),
+  $itemProductPrice: document.getElementById('itemProductPrice'),
+  $itemState: document.getElementById('itemState'),
+  $itemFarmName: document.getElementById('itemFarmName'),
+  $itemFarmInfo: document.getElementById('itemFarmInfo'),
+  $itemFarmLatitude: document.getElementById('itemFarmLatitude'),
+  $itemFarmLongitude: document.getElementById('itemFarmLongitude'),
+  $itemFarmer: document.getElementById('itemFarmer'),
+  $itemDistributor: document.getElementById('itemDistributor'),
+  $itemRetailer: document.getElementById('itemRetailer'),
+  $itemConsumer: document.getElementById('itemConsumer'),
+  $itemFarmerIsOwner: document.getElementById('itemFarmerIsOwner'),
+  $itemDistributorIsOwner: document.getElementById('itemDistributorIsOwner'),
+  $itemRetailerIsOwner: document.getElementById('itemRetailerIsOwner'),
+  $itemConsumerIsOwner: document.getElementById('itemConsumerIsOwner'),
+
+  // action buttons
+  $processButton: document.getElementById('processButton'),
+  $packButton: document.getElementById('packButton'),
+  $sellButton: document.getElementById('sellButton'),
+  $buyButton: document.getElementById('buyButton'),
+  $shipButton: document.getElementById('shipButton'),
+  $receiveButton: document.getElementById('receiveButton'),
+  $purchaseButton: document.getElementById('purchaseButton'),
+
+  currentItem: {},
+  SupplyChainContract: null,
+
+  showErrorToast: (message) => {
+    App.$errorToastBody.setHTML(message);
+    App.errorToast.show();
   },
 
-  getMetaskAccountID: function () {
-    web3 = new Web3(App.web3Provider);
+  showSuccessToast: (message) => {
+    App.$successToastBody.setHTML(message);
+    App.successToast.show();
+  },
 
-    // Retrieving accounts
-    web3.eth.getAccounts(function(err, res) {
-        if (err) {
-            console.log('Error:',err);
-            return;
-        }
-        console.log('getMetaskID:',res);
-        App.metamaskAccountID = res[0];
+  showItem: (item) => {
+    App.$itemSKU.value = item.sku;
+    App.$itemUPC.value = item.upc;
+    App.$itemProductPrice.value = item.productPrice;
+    App.$itemState.value = stateToString(item.itemState);
+    App.$itemFarmName.value = item.originFarmName;
+    App.$itemFarmInfo.value = item.originFarmInformation;
+    App.$itemFarmLatitude.value = item.originFarmLatitude;
+    App.$itemFarmLongitude.value = item.originFarmLongitude;
+    App.$itemFarmer.value = item.originFarmerID;
+    App.$itemDistributor.value = item.distributorID;
+    App.$itemRetailer.value = item.retailerID;
+    App.$itemConsumer.value = item.consumerID;
 
-    })
+    App.$itemFarmerIsOwner.hidden = item.originFarmerID !== item.ownerID;
+    App.$itemDistributorIsOwner.hidden = item.distributorID !== item.ownerID;
+    App.$itemRetailerIsOwner.hidden = item.retailerID !== item.ownerID;
+    App.$itemConsumerIsOwner.hidden = item.consumerID !== item.ownerID;
+
+    const state = parseInt(item.itemState)
+    // App.$processButton.hidden = !App.accountIsFarmer;
+    App.$processButton.disabled = state >= 1;
+
+    // App.$packButton.hidden = !App.accountIsFarmer;
+    App.$packButton.disabled = state >= 2 || state < 1;
+
+    // App.$sellButton.hidden = !App.accountIsFarmer;
+    App.$sellButton.disabled = state >= 3 || state < 2;
+
+    // App.$buyButton.hidden = !App.accountIsDistributor;
+    App.$buyButton.disabled = state >= 4 || state < 3;
+
+    // App.$shipButton.hidden = !App.accountIsDistributor;
+    App.$shipButton.disabled = state >= 5 || state < 4;
+
+    // App.$receiveButton.hidden = !App.accountIsRetailer;
+    App.$receiveButton.disabled = state >= 6 || state < 5;
+
+    // App.$purchaseButton.hidden = !App.accountIsConsumer;
+    App.$purchaseButton.disabled = state >= 7 || state < 6;
   },
 
   initSupplyChain: async function () {
-    /// Source the truffle compiled smart contracts
-    /// JSONfy the smart contracts
-    // $.getJSON(supplyChainArtifact, function(data) {
-    //     console.log('data', data);
-      // App.contracts.SupplyChain = TruffleContract(supplyChainArtifact);
-      // App.contracts.SupplyChain.setProvider(App.web3Provider);
       const { web3 } = this;
 
       try {
         // get contract instance
         const networkId = await web3.eth.net.getId();
         const deployedNetwork = supplyChainArtifact.networks[networkId];
-        console.log('----------------------------------------', networkId, deployedNetwork);
-        App.contracts.SupplyChain = new web3.eth.Contract(
+        App.SupplyChainContract = new web3.eth.Contract(
           supplyChainArtifact.abi,
           deployedNetwork.address,
         );
 
         // get accounts
         const accounts = await web3.eth.getAccounts();
+        console.log(accounts)
         this.account = accounts[0];
+        // await App.SupplyChainContract.methods.addFarmer(accounts[0]).call();
+        // await App.SupplyChainContract.methods.addDistributor(accounts[1]).call();
+        // await App.SupplyChainContract.methods.addFarmer(accounts[2]).call();
+        // await App.SupplyChainContract.methods.addFarmer(accounts[3]).call();
+        // App.accountIsFarmer = await App.SupplyChainContract.methods.isFarmer(App.account).call();
+        // App.accountIsDistributor = await App.SupplyChainContract.methods.isDistributor(App.account).call();
+        // App.accountIsRetailer = await App.SupplyChainContract.methods.isRetailer(App.account).call();
+        // App.accountIsConsumer = await App.SupplyChainContract.methods.isConsumer(App.account).call();
       } catch (error) {
-        console.error("Could not connect to contract or chain.");
+        console.error("Could not connect to contract or chain.", error);
       }
-
-      // App.fetchItemBufferOne();
-      // App.fetchItemBufferTwo();
       App.fetchEvents();
-
-    // });
-
-    // return App.bindEvents();
   },
   bindEvents: function() {
-    $(document).on('click', App.handleButtonClick);
+    App.$upcFetchInputButton.addEventListener("click", App.fetchItem,);
+    App.$newHarvestButton.addEventListener("click", () => App.newHarvestModal.show());
+    App.$newHarvestSaveButton.addEventListener("click", App.harvestItem);
+    App.$processButton.addEventListener("click", App.processItem);
+    App.$packButton.addEventListener("click", App.packItem);
+    App.$sellButton.addEventListener("click", App.sellItem);
+    App.$buyButton.addEventListener("click", App.buyItem);
+    App.$shipButton.addEventListener("click", App.shipItem);
+    App.$receiveButton.addEventListener("click", App.receiveItem);
+    App.$purchaseButton.addEventListener("click", App.purchaseItem);
   },
 
-  handleButtonClick: async function(event) {
-    event.preventDefault();
+  harvestItem: function() {
+    const upc = parseInt(App.$newHarvestUPC.value);
 
-    var processId = parseInt($(event.target).data('id'));
-    console.log('processId', processId);
-
-    switch(processId) {
-      case 1:
-          return await App.harvestItem(event);
-      case 2:
-          return await App.processItem(event);
-      case 3:
-          return await App.packItem(event);
-      case 4:
-          return await App.sellItem(event);
-      case 5:
-          return await App.buyItem(event);
-      case 6:
-          return await App.shipItem(event);
-      case 7:
-          return await App.receiveItem(event);
-      case 8:
-          return await App.purchaseItem(event);
-      case 9:
-          return await App.fetchItemBufferOne(event);
-      case 10:
-          return await App.fetchItemBufferTwo(event);
-    }
-  },
-
-  harvestItem: function(event) {
-    event.preventDefault();
-
-    App.contracts.SupplyChain.methods.harvestItem(
-          App.upc,
-          App.account,
-          App.originFarmName,
-          App.originFarmInformation,
-          App.originFarmLatitude,
-          App.originFarmLongitude,
-          App.productNotes
-      ).send({from: this.account})
-    .then(function(result) {
-        $("#ftc-item").text(result);
-        console.log('harvestItem',result);
-    }).catch(function(err) {
-        console.log(err.message);
+    App.SupplyChainContract.methods.harvestItem(
+      upc,
+      App.$newHarvestFarmName.value,
+      App.$newHarvestFarmInfo.value,
+      App.$newHarvestLatitude.value,
+      App.$newHarvestLongitude.value,
+      App.$newHarvestProductNotes.value,
+    )
+    .send({from: App.account})
+    .then((res) => {
+      App.newHarvestModal.hide();
+      console.log(res);
+      App.showSuccessToast('Item was successfully harvested');
+      App._fetchItem(upc);
+    })
+    .catch((err) => {
+      App.newHarvestModal.hide();
+      console.error(err)
+      App.showErrorToast(parseError(err));
     });
   },
 
-  processItem: function (event) {
-    event.preventDefault();
-    var processId = parseInt($(event.target).data('id'));
+  processItem: () => {
+    const upc = parseInt(App.$itemUPC.value);
 
-    App.contracts.SupplyChain.deployed().then(function(instance) {
-        return instance.processItem(App.upc, {from: App.metamaskAccountID});
-    }).then(function(result) {
-        $("#ftc-item").text(result);
-        console.log('processItem',result);
-    }).catch(function(err) {
-        console.log(err.message);
+    App.SupplyChainContract.methods.processItem(upc)
+    .send({from: App.account})
+    .then((res) => {
+      console.log(res);
+      App.showSuccessToast('Item was successfully processed');
+      App._fetchItem(upc);
+    })
+    .catch((err) => {
+      App.newHarvestModal.hide();
+      App.showErrorToast(parseError(err));
     });
   },
 
-  packItem: function (event) {
-    event.preventDefault();
-    var processId = parseInt($(event.target).data('id'));
+  packItem: () => {
+    const upc = parseInt(App.$itemUPC.value);
 
-    App.contracts.SupplyChain.deployed().then(function(instance) {
-        return instance.packItem(App.upc, {from: App.metamaskAccountID});
-    }).then(function(result) {
-        $("#ftc-item").text(result);
-        console.log('packItem',result);
-    }).catch(function(err) {
-        console.log(err.message);
+    App.SupplyChainContract.methods.packItem(upc)
+    .send({from: App.account})
+    .then((res) => {
+      console.log(res);
+      App.showSuccessToast('Item was successfully packed');
+      App._fetchItem(upc);
+    })
+    .catch((err) => {
+      App.newHarvestModal.hide();
+      App.showErrorToast(parseError(err));
     });
   },
 
-  sellItem: function (event) {
-    event.preventDefault();
-    var processId = parseInt($(event.target).data('id'));
+  sellItem: () => {
+    const upc = parseInt(App.$itemUPC.value);
+    const price = Web3.utils.toWei("1", "ether");
 
-    App.contracts.SupplyChain.deployed().then(function(instance) {
-        const productPrice = web3.toWei(1000000, "gwei");
-        console.log('productPrice',productPrice);
-        return instance.sellItem(App.upc, App.productPrice, {from: App.metamaskAccountID});
-    }).then(function(result) {
-        $("#ftc-item").text(result);
-        console.log('sellItem',result);
-    }).catch(function(err) {
-        console.log(err.message);
+    App.SupplyChainContract.methods.sellItem(upc, price)
+    .send({from: App.account})
+    .then((res) => {
+      console.log(res);
+      App.showSuccessToast('Item was successfully put for sale');
+      App._fetchItem(upc);
+    })
+    .catch((err) => {
+      App.newHarvestModal.hide();
+      App.showErrorToast(parseError(err));
     });
   },
 
-  buyItem: function (event) {
-    event.preventDefault();
-    var processId = parseInt($(event.target).data('id'));
+  buyItem: () => {
+    const upc = parseInt(App.$itemUPC.value);
 
-    App.contracts.SupplyChain.deployed().then(function(instance) {
-        const walletValue = web3.toWei(2000000, "gwei");
-        return instance.buyItem(App.upc, {from: App.metamaskAccountID, value: walletValue});
-    }).then(function(result) {
-        $("#ftc-item").text(result);
-        console.log('buyItem',result);
-    }).catch(function(err) {
-        console.log(err.message);
+    App.SupplyChainContract.methods.buyItem(upc)
+    .send({from: App.account, value: Web3.utils.toWei("1", "ether")})
+    .then((res) => {
+      console.log(res);
+      App.showSuccessToast('Item was successfully bought');
+      App._fetchItem(upc);
+    })
+    .catch((err) => {
+      App.newHarvestModal.hide();
+      App.showErrorToast(parseError(err));
     });
   },
 
-  shipItem: function (event) {
-    event.preventDefault();
-    var processId = parseInt($(event.target).data('id'));
+  shipItem: () => {
+    const upc = parseInt(App.$itemUPC.value);
 
-    App.contracts.SupplyChain.deployed().then(function(instance) {
-        return instance.shipItem(App.upc, {from: App.metamaskAccountID});
-    }).then(function(result) {
-        $("#ftc-item").text(result);
-        console.log('shipItem',result);
-    }).catch(function(err) {
-        console.log(err.message);
+    App.SupplyChainContract.methods.shipItem(upc)
+    .send({from: App.account})
+    .then((res) => {
+      console.log(res);
+      App.showSuccessToast('Item was successfully shipped');
+      App._fetchItem(upc);
+    })
+    .catch((err) => {
+      App.newHarvestModal.hide();
+      App.showErrorToast(parseError(err));
     });
   },
 
-  receiveItem: function (event) {
-    event.preventDefault();
-    var processId = parseInt($(event.target).data('id'));
+  receiveItem: () => {
+    const upc = parseInt(App.$itemUPC.value);
 
-    App.contracts.SupplyChain.deployed().then(function(instance) {
-        return instance.receiveItem(App.upc, {from: App.metamaskAccountID});
-    }).then(function(result) {
-        $("#ftc-item").text(result);
-        console.log('receiveItem',result);
-    }).catch(function(err) {
-        console.log(err.message);
+    App.SupplyChainContract.methods.receiveItem(upc)
+    .send({from: App.account})
+    .then((res) => {
+      console.log(res);
+      App.showSuccessToast('Item was successfully received');
+      App._fetchItem(upc);
+    })
+    .catch((err) => {
+      App.newHarvestModal.hide();
+      App.showErrorToast(parseError(err));
     });
   },
 
-  purchaseItem: function (event) {
-    event.preventDefault();
-    var processId = parseInt($(event.target).data('id'));
+  purchaseItem: () => {
+    const upc = parseInt(App.$itemUPC.value);
 
-    App.contracts.SupplyChain.deployed().then(function(instance) {
-        return instance.purchaseItem(App.upc, {from: App.metamaskAccountID});
-    }).then(function(result) {
-        $("#ftc-item").text(result);
-        console.log('purchaseItem',result);
-    }).catch(function(err) {
-        console.log(err.message);
+    App.SupplyChainContract.methods.purchaseItem(upc)
+    .send({from: App.account})
+    .then((res) => {
+      console.log(res);
+      App.showSuccessToast('Item was successfully purschased');
+      App._fetchItem(upc);
+    })
+    .catch((err) => {
+      App.newHarvestModal.hide();
+      App.showErrorToast(parseError(err));
     });
   },
 
-  fetchItemBufferOne: function () {
-///   event.preventDefault();
-///    var processId = parseInt($(event.target).data('id'));
-    App.upc = $('#upc').val();
-    console.log('upc',App.upc);
+  fetchItem: () => {
+    event.preventDefault();
+    const upc = parseInt(App.$upcFetchInput.value);
+    App._fetchItem(upc);
+  },
 
-    App.contracts.SupplyChain.methods.fetchItemBufferOne(App.upc).call()
-    .then(result => {
-      $("#ftc-item").text(result);
-      console.log('fetchItemBufferOne', result);
+  _fetchItem: (upc) => {
+    App.SupplyChainContract.methods.fetchItem(upc).call()
+    .then(res => {
+      App.currentItem = res;
+      console.log(res);
+      App.showItem(App.currentItem);
     }).catch(err => {
-      console.log(err.message);
+      console.error(err);
+      App.showErrorToast(parseError(err.message));
     });
   },
 
-  fetchItemBufferTwo: function () {
-///    event.preventDefault();
-///    var processId = parseInt($(event.target).data('id'));
-
-    App.contracts.SupplyChain.methods.fetchItemBufferTwo(App.upc).call()
-    .then(function(result) {
-      $("#ftc-item").text(result);
-      console.log('fetchItemBufferTwo', result);
-    }).catch(function(err) {
-      console.log(err.message);
-    });
-  },
-
-  fetchEvents: function () {
-    // if (typeof App.contracts.SupplyChain.currentProvider.sendAsync !== "function") {
-    //     App.contracts.SupplyChain.currentProvider.sendAsync = function () {
-    //         return App.contracts.SupplyChain.currentProvider.send.apply(
-    //         App.contracts.SupplyChain.currentProvider,
-    //             arguments
-    //       );
-    //     };
-    // }
+  fetchEvents: () => {
     console.log('fetching events');
-    App.contracts.SupplyChain.events.allEvents(function(err, log){
-      console.log('+++++++++++++++++++++++++', log)
+    App.SupplyChainContract.events.allEvents(function(err, log){
+      console.log(log.event, log.transactionHash);
       if (!err) {
         $("#ftc-events").append('<li>' + log.event + ' - ' + log.transactionHash + '</li>');
       }
@@ -307,8 +350,6 @@ const App = {
   },
 
   start: async function() {
-    App.readForm();
-    // App.getMetaskAccountID();
     App.bindEvents();
     await App.initSupplyChain();
   },
