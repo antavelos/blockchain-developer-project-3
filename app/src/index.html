@@ -6,167 +6,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fair Trade Coffee</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
 </head>
 
 <body>
-    <div class="container">
-        <h1 style="text-align: center;">Fair Trade Coffee</h1>
-        <hr>
-        <p style="text-align: center;">Prove the authenticity of coffee using the Ethereum blockchain.</p>
-    </div>
-    <div id="ftc-harvest">
-        <h2>Product Overview</h2>
-        <div class="form-group">
-            SKU
-            <br>
-            <input class="input-field" type="number" id="sku" name="sku" value=1><br>
-            UPC
-            <br>
-            <input type="number" id="upc" name="upc" value=1><br>
-            Current Owner ID
-            <br>
-            <input type="text" id="ownerID" name="ownerID" value="0x963865f57804b38459dd4b2da2f760211a200438" size="50"><br>
-            <div class=button-div>
-                <button class="btn-fetchOne" id="button" type="button" data-id="9">Fetch Data 1</button>
-                <button class="btn-fetchTwo" id="button" type="button" data-id="10">Fetch Data 2</button>
-            </div>
-        </div>
-        <div class=form-break></div>
-        <h2>Farm Details</h2>
-        <div class="form-group">
-            Farmer ID
-            <br>
-            <input type="text" id="originFarmerID" name="originFarmerID" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f"
-                size="50"><br>
-            Farm Name
-            <br>
-            <input type="text" id="originFarmName" name="originFarmName" value="John Doe"><br>
-            Farm Information
-            <br>
-            <input type="text" id="originFarmInformation" name="originFarmInformation" value="Yarra Valley"><br>
-            Farm Latitude
-            <br>
-            <input type="text" id="originFarmLatitude" name="originFarmLatitude" value="-38.239770"><br>
-            Farm Longitude
-            <br>
-            <input type="text" id="originFarmLongitude" name="originFarmLongitude" value="144.341490"><br>
-            <br>
-            <button class="btn-harvest" id="button" type="button" data-id="1">Harvest</button>
-            <button class="btn-process" id="button" type="button" data-id="2">Process</button>
-            <button class="btn-pack" id="button" type="button" data-id="3">Pack</button>
-            <button class="btn-forsale" id="button" type="button" data-id="4">ForSale</button>
-        </div>
-        <div class=form-break></div>
-        <h2>Product Details</h2>
-        <div class="form-group">
-            Product Notes
-            <br>
-            <input type="text" id="productNotes" name="productNotes" value="Best beans for Espresso" size="60"><br>
-            Product Price
-            <br>
-            <input type="number" id="productPrice" name="productPrice" value=1>ETH<br>
-            Distributor ID
-            <br>
-            <input type="text" id="distributorID" name="distributorID" value="0xf1b1bcd24dad92303dd9fe78be639f7bcf9c238d"
-                size="50">
-            <br>
-            Retailer ID
-            <br>
-            <input type="text" id="retailerID" name="retailerID" value="0x0fb2bfefd526966c87efa19f6693d50971763fc2"
-                size="50"><br>
-            Consumer ID
-            <br>
-            <input type="text" id="consumerID" name="consumerID" value="0x5d777e9127b28fb119e81a6304278a0a21bef1c4"
-                size="50"><br>
-            <br>
-            <button class="btn-buy" id="button" type="button" data-id="5">Buy</button>
-            <button class="btn-ship" id="button" type="button" data-id="6">Ship</button>
-            <button class="btn-receive" id="button" type="button" data-id="7">Receive</button>
-            <button class="btn-purchase" id="button" type="button" data-id="8">Purchase</button>
-        </div>
-        <div class=form-break></div>
-        <hr>
-    </div>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary bg-dark" aria-label="Thirteenth navbar example">
+      <div class="container">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample11" aria-controls="navbarsExample11" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    <h2>Transaction History<span id="ftc-history"></span></h2>
-    <div>
-        <ul id="ftc-events">
-            <!-- Events will appear here from app.js -->
+      <div class="collapse navbar-collapse d-lg-flex" id="navbarsExample11">
+        <i class="bi bi-cup-hot-fill" style="margin-right: 5px;"></i>
+
+        <a class="navbar-brand col-lg-3 me-0" href="#">Fair Trade Coffee | On Ethereum Blockchain</a>
+        <ul class="navbar-nav col-lg-6 justify-content-lg-center">
         </ul>
-        <br>
-        <hr>
+        <div class="d-lg-flex col-lg-3 justify-content-lg-end">
+          <div class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle dropend" href="#" data-bs-toggle="dropdown" aria-expanded="false">Register account</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">New Farmer</a></li>
+              <li><a class="dropdown-item" href="#">New Distributor</a></li>
+              <li><a class="dropdown-item" href="#">New Retailer</a></li>
+              <li><a class="dropdown-item" href="#">New Consumer</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
+  </nav>
+
+  <div class="container"">
+    <div class="row gx-5">
+      <div class="col-4">
+        <form class="d-flex mt-3" role="search">
+          <input class="form-control me-2" type="search" placeholder="Fetch product by UPC" aria-label="Search">
+          <button class="btn btn-outline-success" type="submit">Fetch</button>
+        </form>
+      </div>
+      <!-- <div class="col-9"></div> -->
+      <div class="col-8">
+        <button type="button" class="btn btn-outline-dark mt-3 float-end">New harvest</button>
+      </div>
+    </div>
+    <div class="row mt-3 gx-5" style="background-color: #f8f8f8; padding-bottom: 20px; padding-top: 20px;">
+      <div class="col-8">
+        <h3 class="">Best beans for Espresso</h3>
+          <div class="input-group mb-3">
+            <span class="input-group-text">SKU</span>
+            <input type="text" class="form-control" value="1" disabled>
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text">UPC</span>
+            <input type="text" class="form-control" value="1" disabled>
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text">Price</span>
+            <input type="text" class="form-control" value="10" disabled>
+            <span class="input-group-text">ETH</span>
+          </div>
+          <div>
+
+            <button type="button" class="btn btn-outline-success">Process</button>
+            <button type="button" class="btn btn-outline-success">Pack</button>
+            <button type="button" class="btn btn-outline-success">Sell</button>
+            <button type="button" class="btn btn-outline-success">Buy</button>
+            <button type="button" class="btn btn-outline-success">Ship</button>
+            <button type="button" class="btn btn-outline-success">Receive</button>
+            <button type="button" class="btn btn-outline-success">Purchase</button>
+          </div>
+          <hr>
+          <div class="accordion mt-3" id="accordionPanelsStayOpenExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                  Farm
+                </button>
+              </h2>
+              <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">Name</span>
+                    <input type="text" class="form-control" value="John Doe" disabled>
+                  </div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">Details</span>
+                    <input type="text" class="form-control" value="Yarra Valley" disabled>
+                  </div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">Latitude</span>
+                    <input type="text" class="form-control" value="-38.239770" disabled>
+                  </div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">Longitude</span>
+                    <input type="text" class="form-control" value="144.341490" disabled>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="true" aria-controls="panelsStayOpen-collapseTwo">
+                  Involved accounts
+                </button>
+              </h2>
+              <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">Origin Farmer</span>
+                    <input type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                  </div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">Distributor</span>
+                    <input type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                  </div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">Retailer</span>
+                    <input type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                  </div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">Consumer</span>
+                    <input type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="true" aria-controls="panelsStayOpen-collapseThree">
+                  Transaction history
+                </button>
+              </h2>
+              <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Event</th>
+                        <th scope="col">Transaction Hash</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">1</th>
+                        <td>Harvested</td>
+                        <td>0x99c289eb2aacec289631a5ddf62cf27a63d4494f</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">2</th>
+                        <td>Processed</td>
+                        <td>0x99c289eb2aacec289631a5ddf62cf27a63d4494f</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="index.js"></script>
     <style>
       body {
         background-color:#fff;
-        padding: 2em;
         font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif';
         color: #212121;
       }
-      .container {
-        width: 80%;
-        margin: 0 auto;
-      }
-
-
-      .bold {
-        font-weight: bolder;
-      }
-
-      input {
-          width: 80%;
-          padding: 12px 20px;
-          margin: 10px 0;
-      }
-
-      button {
-          cursor: pointer;
-          background-color: #4CAF50;
-          border: none;
-          color: white;
-          background-color: #00BCD4;
-          font-size: 16px;
-          padding: 16px 32px;
-          text-decoration: none;
-          margin: 4px 2px;
-          cursor: pointer;
-      }
-
-      .sell {
-        background-color: white;
-        color: #D1C4E9;
-      }
-
-      .ftc-intro {
-        background-color:#0097A7;
-        color:white;
-        width:100%;
-        padding:20px;
-      }
-
-      .form-group {
-        background-color:#0097A7;
-        color:black;
-        width:50%;
-        padding:30px;
-        border-radius: 4px;
-        background-color: #f8f8f8;
-      }
-
-      .form-break {
-        background-color:#fff;
-        color:white;
-        width:100%;
-        padding:5px;
-      }
-
-      .horizontal-rule {
-        background-color:#BDBDBD;
-      }
-
     </style>
 </body>
 
