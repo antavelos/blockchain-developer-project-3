@@ -47,39 +47,40 @@
           <button id="upcFetchInputButton" class="btn btn-outline-primary">Fetch</button>
         </form>
       </div>
-      <!-- <div class="col-9"></div> -->
       <div class="col-8">
         <button id="newHarvestButton" type="button" class="btn btn-outline-primary mt-3 float-end">New harvest</button>
       </div>
     </div>
     <div class="row mt-3 gx-5" style="background-color: #f8f8f8; padding-bottom: 20px; padding-top: 20px;">
-      <div class="col-8">
+      <!-- <div id="itemLoading" hidden class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div> -->
+      <div id="itemContent" class="col-9">
         <h3 id="itemProductNotes" class="">Best beans for Espresso</h3>
           <div class="input-group mb-3">
             <span class="input-group-text">SKU</span>
-            <input id="itemSKU" type="text" class="form-control" value="1" disabled>
+            <input id="itemSKU" type="text" class="form-control" value="" disabled>
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">UPC</span>
-            <input id="itemUPC" type="text" class="form-control" value="1" disabled>
+            <input id="itemUPC" type="text" class="form-control" value="" disabled>
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">Price</span>
-            <input id="itemProductPrice" type="text" class="form-control" value="10" disabled>
+            <input id="itemProductPrice" type="text" class="form-control" value="" disabled>
             <span class="input-group-text">wei</span>
           </div>
-          <div class="input-group mb-3">
-            <span class="input-group-text">State</span>
-            <input id="itemState" type="text" class="form-control" value="10" disabled>
-          </div>
           <div>
-            <button id="processButton" type="button" class="btn btn-outline-primary">Process</button>
-            <button id="packButton" type="button" class="btn btn-outline-primary">Pack</button>
-            <button id="sellButton" type="button" class="btn btn-outline-primary">Sell</button>
-            <button id="buyButton" type="button" class="btn btn-outline-primary">Buy</button>
-            <button id="shipButton" type="button" class="btn btn-outline-primary">Ship</button>
-            <button id="receiveButton" type="button" class="btn btn-outline-primary">Receive</button>
-            <button id="purchaseButton" type="button" class="btn btn-outline-primary">Purchase</button>
+            <button id="harvestButton" type="button" class="btn btn-outline-primary" disabled>Harvest</i></button>
+            <button id="processButton" type="button" class="btn btn-outline-primary" disabled>Process</i></button>
+            <button id="packButton" type="button" class="btn btn-outline-primary" disabled>Pack</i></button>
+            <button id="sellButton" type="button" class="btn btn-outline-primary" disabled>Sell</i></button>
+            <button id="buyButton" type="button" class="btn btn-outline-primary" disabled>Buy</i></button>
+            <button id="shipButton" type="button" class="btn btn-outline-primary" disabled>Ship</i></button>
+            <button id="receiveButton" type="button" class="btn btn-outline-primary" disabled>Receive</i></button>
+            <button id="purchaseButton" type="button" class="btn btn-outline-primary" disabled>Purchase</i></button>
           </div>
           <hr>
           <div class="accordion mt-3" id="accordionPanelsStayOpenExample">
@@ -93,19 +94,19 @@
                 <div class="accordion-body">
                   <div class="input-group mb-3">
                     <span class="input-group-text">Name</span>
-                    <input id="itemFarmName" type="text" class="form-control" value="John Doe" disabled>
+                    <input id="itemFarmName" type="text" class="form-control" value="" disabled>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Details</span>
-                    <input id="itemFarmInfo" type="text" class="form-control" value="Yarra Valley" disabled>
+                    <input id="itemFarmInfo" type="text" class="form-control" value="" disabled>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Latitude</span>
-                    <input id="itemFarmLatitude" type="text" class="form-control" value="-38.239770" disabled>
+                    <input id="itemFarmLatitude" type="text" class="form-control" value="" disabled>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Longitude</span>
-                    <input id="itemFarmLongitude" type="text" class="form-control" value="144.341490" disabled>
+                    <input id="itemFarmLongitude" type="text" class="form-control" value="" disabled>
                   </div>
                 </div>
               </div>
@@ -120,22 +121,22 @@
                 <div class="accordion-body">
                   <div class="input-group mb-3">
                     <span class="input-group-text">Origin Farmer</span>
-                    <input id="itemFarmer" type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <input id="itemFarmer" type="text" class="form-control" value="" disabled>
                     <span id="itemFarmerIsOwner" class="input-group-text" hidden>Owner</span>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Distributor</span>
-                    <input id="itemDistributor" type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <input id="itemDistributor" type="text" class="form-control" value="" disabled>
                     <span id="itemDistributorIsOwner" class="input-group-text" hidden>Owner</span>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Retailer</span>
-                    <input id="itemRetailer" type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <input id="itemRetailer" type="text" class="form-control" value="" disabled>
                     <span id="itemRetailerIsOwner" class="input-group-text" hidden>Owner</span>
                   </div>
                   <div class="input-group mb-3">
                     <span class="input-group-text">Consumer</span>
-                    <input id="itemConsumer" type="text" class="form-control" value="0x99c289eb2aacec289631a5ddf62cf27a63d4494f" disabled>
+                    <input id="itemConsumer" type="text" class="form-control" value="" disabled>
                     <span id="itemConsumerIsOwner" class="input-group-text" hidden>Owner</span>
                   </div>
                 </div>
@@ -158,7 +159,7 @@
                       </tr>
                     </thead>
                     <tbody id="txHistoryTable">
-                      <tr>
+                      <!-- <tr>
                         <th scope="row">1</th>
                         <td>Harvested</td>
                         <td>0x99c289eb2aacec289631a5ddf62cf27a63d4494f</td>
@@ -167,7 +168,7 @@
                         <th scope="row">2</th>
                         <td>Processed</td>
                         <td>0x99c289eb2aacec289631a5ddf62cf27a63d4494f</td>
-                      </tr>
+                      </tr> -->
                     </tbody>
                   </table>
                 </div>
@@ -343,6 +344,9 @@
       background-color:#fff;
       font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif';
       color: #212121;
+    }
+    code {
+      color: #1980d8;
     }
   </style>
 </body>

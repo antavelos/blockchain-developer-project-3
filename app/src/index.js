@@ -31,6 +31,47 @@ const stateToString = (state) => {
   }
 };
 
+class ActionButton{
+  constructor(el, defaultState, actionName, actionCompletedName) {
+    this.el = el;
+    this.defaultState = defaultState;
+    this.actionName = actionName;
+    this.actionCompletedName = actionCompletedName;
+  }
+
+  update(state) {
+    this._reset();
+    if (state == this.defaultState - 1) { this._enable(); }
+    if (state >= this.defaultState) { this._markCompleted(); }
+  }
+
+  _reset(cond) {
+    this.el.innerHTML = '';
+    this.el.appendChild(document.createTextNode(this.actionName + ' '));
+    this.el.disabled = true;
+  }
+
+  _enable() {
+    this.el.innerHTML = '';
+    this.el.appendChild(document.createTextNode(this.actionName + ' '));
+    this.el.disabled = false;
+  }
+
+  _createIcon() {
+    const node = document.createElement("i");
+    node.classList.add('bi');
+    node.classList.add('bi-check-circle-fill');
+    return node;
+  }
+
+  _markCompleted() {
+    this.el.innerHTML = '';
+    this.el.disabled = true;
+    this.el.appendChild(document.createTextNode(this.actionCompletedName + ' '));
+    this.el.appendChild(this._createIcon());
+  }
+};
+
 const App = {
   web3: null,
   account: null,
@@ -60,10 +101,11 @@ const App = {
   $newHarvestLongitude: document.getElementById("newHarvestFarmLongitude"),
 
   // item details elements
+  $itemLoading: document.getElementById('itemLoading'),
+  $itemContent: document.getElementById('itemContent'),
   $itemSKU: document.getElementById('itemSKU'),
   $itemUPC: document.getElementById('itemUPC'),
   $itemProductPrice: document.getElementById('itemProductPrice'),
-  $itemState: document.getElementById('itemState'),
   $itemFarmName: document.getElementById('itemFarmName'),
   $itemFarmInfo: document.getElementById('itemFarmInfo'),
   $itemFarmLatitude: document.getElementById('itemFarmLatitude'),
@@ -76,15 +118,32 @@ const App = {
   $itemDistributorIsOwner: document.getElementById('itemDistributorIsOwner'),
   $itemRetailerIsOwner: document.getElementById('itemRetailerIsOwner'),
   $itemConsumerIsOwner: document.getElementById('itemConsumerIsOwner'),
+  $txHistoryTable: document.getElementById('txHistoryTable'),
 
   // action buttons
+  harvestButton: new ActionButton(document.getElementById('harvestButton'), 0, 'Harvest', 'Harvested'),
+  processButton: new ActionButton(document.getElementById('processButton'), 1, 'Process', 'Processed'),
+  packButton: new ActionButton(document.getElementById('packButton'), 2, 'Pack', 'Packed'),
+  sellButton: new ActionButton(document.getElementById('sellButton'), 3, 'Sell', 'For sale'),
+  buyButton: new ActionButton(document.getElementById('buyButton'), 4, 'Buy', 'Bought'),
+  shipButton: new ActionButton(document.getElementById('shipButton'), 5, 'Ship', 'Shipped'),
+  receiveButton: new ActionButton(document.getElementById('receiveButton'), 6, 'Receive', 'Receiveed'),
+  purchaseButton: new ActionButton(document.getElementById('purchaseButton'), 7, 'Purchase', 'Purchaseed'),
+
   $processButton: document.getElementById('processButton'),
+  $processButtonCheck: document.getElementById('processButtonCheck'),
   $packButton: document.getElementById('packButton'),
+  $packButtonCheck: document.getElementById('packButtonCheck'),
   $sellButton: document.getElementById('sellButton'),
+  $sellButtonCheck: document.getElementById('sellButtonCheck'),
   $buyButton: document.getElementById('buyButton'),
+  $buyButtonCheck: document.getElementById('buyButtonCheck'),
   $shipButton: document.getElementById('shipButton'),
+  $shipButtonCheck: document.getElementById('shipButtonCheck'),
   $receiveButton: document.getElementById('receiveButton'),
+  $receiveButtonCheck: document.getElementById('receiveButtonCheck'),
   $purchaseButton: document.getElementById('purchaseButton'),
+  $purchaseButtonCheck: document.getElementById('purchaseButtonCheck'),
 
   currentItem: {},
   SupplyChainContract: null,
@@ -103,7 +162,6 @@ const App = {
     App.$itemSKU.value = item.sku;
     App.$itemUPC.value = item.upc;
     App.$itemProductPrice.value = item.productPrice;
-    App.$itemState.value = stateToString(item.itemState);
     App.$itemFarmName.value = item.originFarmName;
     App.$itemFarmInfo.value = item.originFarmInformation;
     App.$itemFarmLatitude.value = item.originFarmLatitude;
@@ -119,26 +177,27 @@ const App = {
     App.$itemConsumerIsOwner.hidden = item.consumerID !== item.ownerID;
 
     const state = parseInt(item.itemState)
-    // App.$processButton.hidden = !App.accountIsFarmer;
-    App.$processButton.disabled = state >= 1;
 
-    // App.$packButton.hidden = !App.accountIsFarmer;
-    App.$packButton.disabled = state >= 2 || state < 1;
+    App.harvestButton.update(state);
+    App.processButton.update(state);
+    App.packButton.update(state);
+    App.sellButton.update(state);
+    App.buyButton.update(state);
+    App.shipButton.update(state);
+    App.receiveButton.update(state);
+    App.purchaseButton.update(state);
+    App.processButton.update(state);
+  },
 
-    // App.$sellButton.hidden = !App.accountIsFarmer;
-    App.$sellButton.disabled = state >= 3 || state < 2;
+  showTxHistoryEvent(rowIdx, eventName, txHash) {
+    let row = App.$txHistoryTable.insertRow(rowIdx);
+    row.insertCell(0).innerHTML = rowIdx + 1;
+    row.insertCell(1).innerHTML = `<code><strong>${eventName}</strong></code>`;
+    row.insertCell(2).innerHTML = `<code>${txHash}</code>`;
+  },
 
-    // App.$buyButton.hidden = !App.accountIsDistributor;
-    App.$buyButton.disabled = state >= 4 || state < 3;
-
-    // App.$shipButton.hidden = !App.accountIsDistributor;
-    App.$shipButton.disabled = state >= 5 || state < 4;
-
-    // App.$receiveButton.hidden = !App.accountIsRetailer;
-    App.$receiveButton.disabled = state >= 6 || state < 5;
-
-    // App.$purchaseButton.hidden = !App.accountIsConsumer;
-    App.$purchaseButton.disabled = state >= 7 || state < 6;
+  emptyTxHistory() {
+    App.$txHistoryTable.innerHTML = '';
   },
 
   initSupplyChain: async function () {
@@ -168,9 +227,9 @@ const App = {
       } catch (error) {
         console.error("Could not connect to contract or chain.", error);
       }
-      App.fetchEvents();
   },
-  bindEvents: function() {
+
+  bindElementEvents: function() {
     App.$upcFetchInputButton.addEventListener("click", App.fetchItem,);
     App.$newHarvestButton.addEventListener("click", () => App.newHarvestModal.show());
     App.$newHarvestSaveButton.addEventListener("click", App.harvestItem);
@@ -242,7 +301,7 @@ const App = {
 
   sellItem: () => {
     const upc = parseInt(App.$itemUPC.value);
-    const price = Web3.utils.toWei("1", "ether");
+    const price = Web3.utils.toWei("1", "ether"); // make modal
 
     App.SupplyChainContract.methods.sellItem(upc, price)
     .send({from: App.account})
@@ -333,25 +392,45 @@ const App = {
       App.currentItem = res;
       console.log(res);
       App.showItem(App.currentItem);
+      App.fetchItemEventsHistory(upc);
     }).catch(err => {
       console.error(err);
       App.showErrorToast(parseError(err.message));
     });
   },
 
-  fetchEvents: () => {
-    console.log('fetching events');
-    App.SupplyChainContract.events.allEvents(function(err, log){
-      console.log(log.event, log.transactionHash);
-      if (!err) {
-        $("#ftc-events").append('<li>' + log.event + ' - ' + log.transactionHash + '</li>');
+  fetchItemEventsHistory: async (upc) => {
+    const eventList = [
+      'Harvested',
+      'Processed',
+      'Packed',
+      'ForSale',
+      'Sold',
+      'Shipped',
+      'Received',
+      'Purchased'
+    ]
+    const options = {fromBlock: 'earliest', toBlock: 'latest'};
+
+    App.emptyTxHistory();
+    let count = 0;
+    eventList.forEach(async eventName => {
+      let events = await App.SupplyChainContract.getPastEvents(eventName, options);
+      events = events.filter(e => e.returnValues.upc == upc);
+      if (events.length > 0) {
+        App.showTxHistoryEvent(count, eventName, events[0].transactionHash);
+        console.log([eventName, events[0].transactionHash]);
       }
-    });
+      count += 1;
+    })
   },
 
   start: async function() {
-    App.bindEvents();
     await App.initSupplyChain();
+
+    App._fetchItem(1);
+
+    App.bindElementEvents();
   },
 
 };
