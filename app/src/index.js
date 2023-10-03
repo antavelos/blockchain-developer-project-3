@@ -1,33 +1,13 @@
 import Web3 from "web3";
 import supplyChainArtifact from "../../build/contracts/SupplyChain.json";
 
-const emptyAddress = "0x0000000000000000000000000000000000000000"
+const getById = (id) => document.getElementById(id);
 
 const parseError = err => {
   try {
     return err.message.split('message')[1].split('code')[0].slice(3).slice(0, -3)
   } catch {
     return err.message;
-  }
-};
-
-const stateToString = (state) => {
-  if (state == 0) {
-      return "Harvested";
-  } else if (state == 1) {
-      return "Processed";
-  } else if (state == 2) {
-      return "Packed";
-  } else if (state == 3) {
-      return "ForSale";
-  } else if (state == 4) {
-      return "Sold";
-  } else if (state == 5) {
-      return "Shipped";
-  } else if (state == 6) {
-      return "Received";
-  } else if (state == 7) {
-      return "Purchased";
   }
 };
 
@@ -40,110 +20,131 @@ class ActionButton{
   }
 
   update(state) {
-    this._reset();
-    if (state == this.defaultState - 1) { this._enable(); }
-    if (state >= this.defaultState) { this._markCompleted(); }
+    this.reset();
+    if (state == this.defaultState - 1) { this.enable(); }
+    if (state >= this.defaultState) { this.markCompleted(); }
   }
 
-  _reset(cond) {
+  reset() {
+    this.el.innerHTML = '';
+    this.el.appendChild(document.createTextNode(this.actionName + ' '));
+    this.el.classList.remove('btn-primary');
+    this.el.classList.add('btn-outline-primary');
+    this.el.disabled = true;
+  }
+
+  enable() {
+    this.el.innerHTML = '';
+    this.el.appendChild(document.createTextNode(this.actionName + ' '));
+    this.el.classList.remove('btn-outline-primary');
+    this.el.classList.add('btn-primary');
+    this.el.disabled = false;
+  }
+
+  disable() {
     this.el.innerHTML = '';
     this.el.appendChild(document.createTextNode(this.actionName + ' '));
     this.el.disabled = true;
   }
 
-  _enable() {
-    this.el.innerHTML = '';
-    this.el.appendChild(document.createTextNode(this.actionName + ' '));
-    this.el.disabled = false;
-  }
-
-  _createIcon() {
+  createIcon() {
     const node = document.createElement("i");
     node.classList.add('bi');
     node.classList.add('bi-check-circle-fill');
     return node;
   }
 
-  _markCompleted() {
+  markCompleted() {
     this.el.innerHTML = '';
     this.el.disabled = true;
     this.el.appendChild(document.createTextNode(this.actionCompletedName + ' '));
-    this.el.appendChild(this._createIcon());
+    this.el.appendChild(this.createIcon());
   }
 };
 
 const App = {
+  emptyAddress: "0x0000000000000000000000000000000000000000",
   web3: null,
   account: null,
   meta: null,
-  accountIsFarmer: false,
-  accountIsDistributor: false,
-  accountIsRetailer: false,
-  accountIsConsumer: false,
 
   // elements
-  $upcFetchInputButton: document.getElementById("upcFetchInputButton"),
-  $upcFetchInput: document.getElementById("upcFetchInput"),
-  $newHarvestButton: document.getElementById("newHarvestButton"),
-  $newHarvestSaveButton: document.getElementById("newHarvestSaveButton"),
+  $currentAccount: getById("currentAccount"),
+  $upcFetchInputButton: getById("upcFetchInputButton"),
+  $upcFetchInput: getById("upcFetchInput"),
+  $newHarvestButton: getById("newHarvestButton"),
+  $newHarvestSaveButton: getById("newHarvestSaveButton"),
   newHarvestModal: new bootstrap.Modal('#newHarvestModal'),
   successToast: new bootstrap.Toast('#successToast'),
-  $successToastBody: document.getElementById('successToastBody'),
+  $successToastBody: getById('successToastBody'),
   errorToast: new bootstrap.Toast('#errorToast'),
-  $errorToastBody: document.getElementById('errorToastBody'),
+  $errorToastBody: getById('errorToastBody'),
+  sellItemModal: new bootstrap.Modal('#sellItemModal'),
+  $sellItemConfirmButton: getById('sellItemConfirmButton'),
+  $sellItemPrice: getById('sellItemPrice'),
+
+  // new accounts
+  newAccountModal: new bootstrap.Modal('#newAccountModal'),
+  $newAccountValue: getById('newAccountValue'),
+  $newAccountRole: getById('newAccountRole'),
+  $newAccountButton: getById('newAccountButton'),
+  $newAccountSaveButton: getById('newAccountSaveButton'),
 
   // new harvest form elements
-  $newHarvestUPC: document.getElementById("newHarvestUPC"),
-  $newHarvestProductNotes: document.getElementById("newHarvestProductNotes"),
-  $newHarvestFarmName: document.getElementById("newHarvestFarmName"),
-  $newHarvestFarmInfo: document.getElementById("newHarvestFarmInfo"),
-  $newHarvestLatitude: document.getElementById("newHarvestFarmLatitude"),
-  $newHarvestLongitude: document.getElementById("newHarvestFarmLongitude"),
+  $newHarvestUPC: getById("newHarvestUPC"),
+  $newHarvestProductNotes: getById("newHarvestProductNotes"),
+  $newHarvestFarmName: getById("newHarvestFarmName"),
+  $newHarvestFarmInfo: getById("newHarvestFarmInfo"),
+  $newHarvestLatitude: getById("newHarvestFarmLatitude"),
+  $newHarvestLongitude: getById("newHarvestFarmLongitude"),
 
   // item details elements
-  $itemLoading: document.getElementById('itemLoading'),
-  $itemContent: document.getElementById('itemContent'),
-  $itemSKU: document.getElementById('itemSKU'),
-  $itemUPC: document.getElementById('itemUPC'),
-  $itemProductPrice: document.getElementById('itemProductPrice'),
-  $itemFarmName: document.getElementById('itemFarmName'),
-  $itemFarmInfo: document.getElementById('itemFarmInfo'),
-  $itemFarmLatitude: document.getElementById('itemFarmLatitude'),
-  $itemFarmLongitude: document.getElementById('itemFarmLongitude'),
-  $itemFarmer: document.getElementById('itemFarmer'),
-  $itemDistributor: document.getElementById('itemDistributor'),
-  $itemRetailer: document.getElementById('itemRetailer'),
-  $itemConsumer: document.getElementById('itemConsumer'),
-  $itemFarmerIsOwner: document.getElementById('itemFarmerIsOwner'),
-  $itemDistributorIsOwner: document.getElementById('itemDistributorIsOwner'),
-  $itemRetailerIsOwner: document.getElementById('itemRetailerIsOwner'),
-  $itemConsumerIsOwner: document.getElementById('itemConsumerIsOwner'),
-  $txHistoryTable: document.getElementById('txHistoryTable'),
+  $itemContent: getById('itemContent'),
+  $itemSKU: getById('itemSKU'),
+  $itemUPC: getById('itemUPC'),
+  $itemProductPrice: getById('itemProductPrice'),
+  $itemProductNotes: getById('itemProductNotes'),
+  $itemFarmName: getById('itemFarmName'),
+  $itemFarmInfo: getById('itemFarmInfo'),
+  $itemFarmLatitude: getById('itemFarmLatitude'),
+  $itemFarmLongitude: getById('itemFarmLongitude'),
+  $itemFarmer: getById('itemFarmer'),
+  $itemDistributor: getById('itemDistributor'),
+  $itemRetailer: getById('itemRetailer'),
+  $itemConsumer: getById('itemConsumer'),
+  $itemFarmerIsOwner: getById('itemFarmerIsOwner'),
+  $itemDistributorIsOwner: getById('itemDistributorIsOwner'),
+  $itemRetailerIsOwner: getById('itemRetailerIsOwner'),
+  $itemConsumerIsOwner: getById('itemConsumerIsOwner'),
+  $txHistoryTable: getById('txHistoryTable'),
 
   // action buttons
-  harvestButton: new ActionButton(document.getElementById('harvestButton'), 0, 'Harvest', 'Harvested'),
-  processButton: new ActionButton(document.getElementById('processButton'), 1, 'Process', 'Processed'),
-  packButton: new ActionButton(document.getElementById('packButton'), 2, 'Pack', 'Packed'),
-  sellButton: new ActionButton(document.getElementById('sellButton'), 3, 'Sell', 'For sale'),
-  buyButton: new ActionButton(document.getElementById('buyButton'), 4, 'Buy', 'Bought'),
-  shipButton: new ActionButton(document.getElementById('shipButton'), 5, 'Ship', 'Shipped'),
-  receiveButton: new ActionButton(document.getElementById('receiveButton'), 6, 'Receive', 'Receiveed'),
-  purchaseButton: new ActionButton(document.getElementById('purchaseButton'), 7, 'Purchase', 'Purchaseed'),
+  actionButtons: {
+    harvestButton: new ActionButton(getById('harvestButton'), 0, 'Harvest', 'Harvested'),
+    processButton: new ActionButton(getById('processButton'), 1, 'Process', 'Processed'),
+    packButton: new ActionButton(getById('packButton'), 2, 'Pack', 'Packed'),
+    sellButton: new ActionButton(getById('sellButton'), 3, 'Sell', 'For sale'),
+    buyButton: new ActionButton(getById('buyButton'), 4, 'Buy', 'Bought'),
+    shipButton: new ActionButton(getById('shipButton'), 5, 'Ship', 'Shipped'),
+    receiveButton: new ActionButton(getById('receiveButton'), 6, 'Receive', 'Received'),
+    purchaseButton: new ActionButton(getById('purchaseButton'), 7, 'Purchase', 'Purchased'),
+  },
 
-  $processButton: document.getElementById('processButton'),
-  $processButtonCheck: document.getElementById('processButtonCheck'),
-  $packButton: document.getElementById('packButton'),
-  $packButtonCheck: document.getElementById('packButtonCheck'),
-  $sellButton: document.getElementById('sellButton'),
-  $sellButtonCheck: document.getElementById('sellButtonCheck'),
-  $buyButton: document.getElementById('buyButton'),
-  $buyButtonCheck: document.getElementById('buyButtonCheck'),
-  $shipButton: document.getElementById('shipButton'),
-  $shipButtonCheck: document.getElementById('shipButtonCheck'),
-  $receiveButton: document.getElementById('receiveButton'),
-  $receiveButtonCheck: document.getElementById('receiveButtonCheck'),
-  $purchaseButton: document.getElementById('purchaseButton'),
-  $purchaseButtonCheck: document.getElementById('purchaseButtonCheck'),
+  // action button elements
+  $processButton: getById('processButton'),
+  $processButtonCheck: getById('processButtonCheck'),
+  $packButton: getById('packButton'),
+  $packButtonCheck: getById('packButtonCheck'),
+  $sellButton: getById('sellButton'),
+  $sellButtonCheck: getById('sellButtonCheck'),
+  $buyButton: getById('buyButton'),
+  $buyButtonCheck: getById('buyButtonCheck'),
+  $shipButton: getById('shipButton'),
+  $shipButtonCheck: getById('shipButtonCheck'),
+  $receiveButton: getById('receiveButton'),
+  $receiveButtonCheck: getById('receiveButtonCheck'),
+  $purchaseButton: getById('purchaseButton'),
+  $purchaseButtonCheck: getById('purchaseButtonCheck'),
 
   currentItem: {},
   SupplyChainContract: null,
@@ -162,6 +163,7 @@ const App = {
     App.$itemSKU.value = item.sku;
     App.$itemUPC.value = item.upc;
     App.$itemProductPrice.value = item.productPrice;
+    App.$itemProductNotes.innerHTML = item.productNotes;
     App.$itemFarmName.value = item.originFarmName;
     App.$itemFarmInfo.value = item.originFarmInformation;
     App.$itemFarmLatitude.value = item.originFarmLatitude;
@@ -171,22 +173,15 @@ const App = {
     App.$itemRetailer.value = item.retailerID;
     App.$itemConsumer.value = item.consumerID;
 
-    App.$itemFarmerIsOwner.hidden = item.originFarmerID !== item.ownerID;
-    App.$itemDistributorIsOwner.hidden = item.distributorID !== item.ownerID;
-    App.$itemRetailerIsOwner.hidden = item.retailerID !== item.ownerID;
-    App.$itemConsumerIsOwner.hidden = item.consumerID !== item.ownerID;
+    App.$itemFarmerIsOwner.hidden = item.ownerID === App.emptyAddress || item.originFarmerID !== item.ownerID;
+    App.$itemDistributorIsOwner.hidden = item.ownerID === App.emptyAddress || item.distributorID !== item.ownerID;
+    App.$itemRetailerIsOwner.hidden = item.ownerID === App.emptyAddress || item.retailerID !== item.ownerID;
+    App.$itemConsumerIsOwner.hidden = item.ownerID === App.emptyAddress || item.consumerID !== item.ownerID;
 
-    const state = parseInt(item.itemState)
+    const itemExists = item.sku != 0;
+    const buttons = Object.values(App.actionButtons);
 
-    App.harvestButton.update(state);
-    App.processButton.update(state);
-    App.packButton.update(state);
-    App.sellButton.update(state);
-    App.buyButton.update(state);
-    App.shipButton.update(state);
-    App.receiveButton.update(state);
-    App.purchaseButton.update(state);
-    App.processButton.update(state);
+    itemExists ? buttons.forEach(button => button.update(parseInt(item.itemState))) : buttons.forEach(button => button.reset());
   },
 
   showTxHistoryEvent(rowIdx, eventName, txHash) {
@@ -212,34 +207,78 @@ const App = {
           deployedNetwork.address,
         );
 
-        // get accounts
-        const accounts = await web3.eth.getAccounts();
-        console.log(accounts)
-        this.account = accounts[0];
-        // await App.SupplyChainContract.methods.addFarmer(accounts[0]).call();
-        // await App.SupplyChainContract.methods.addDistributor(accounts[1]).call();
-        // await App.SupplyChainContract.methods.addFarmer(accounts[2]).call();
-        // await App.SupplyChainContract.methods.addFarmer(accounts[3]).call();
-        // App.accountIsFarmer = await App.SupplyChainContract.methods.isFarmer(App.account).call();
-        // App.accountIsDistributor = await App.SupplyChainContract.methods.isDistributor(App.account).call();
-        // App.accountIsRetailer = await App.SupplyChainContract.methods.isRetailer(App.account).call();
-        // App.accountIsConsumer = await App.SupplyChainContract.methods.isConsumer(App.account).call();
+
       } catch (error) {
         console.error("Could not connect to contract or chain.", error);
       }
+
+      // get accounts
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      App.account = accounts[0];
+      App.updateCurrentAccountText(App.account);
+  },
+
+  updateCurrentAccountText: async (account) => {
+    let roles = [];
+    if (await App.SupplyChainContract.methods.isOwner().call({from: account})) {
+      roles.push('Owner');
+    }
+    if (await App.SupplyChainContract.methods.isFarmer(account).call({from: account})) {
+      roles.push('Farmer');
+    }
+    if (await App.SupplyChainContract.methods.isDistributor(account).call({from: account})) {
+      roles.push('Distributor');
+    }
+    if (await App.SupplyChainContract.methods.isRetailer(account).call({from: account})) {
+      roles.push('Retailer')
+    }
+    if (await App.SupplyChainContract.methods.isConsumer(account).call({from: account})) {
+      roles.push('Consumer');
+    }
+
+    App.$currentAccount.innerHTML = `Current active account: <strong>${account}</strong> - ${roles.join(' | ')}`;
   },
 
   bindElementEvents: function() {
     App.$upcFetchInputButton.addEventListener("click", App.fetchItem,);
     App.$newHarvestButton.addEventListener("click", () => App.newHarvestModal.show());
     App.$newHarvestSaveButton.addEventListener("click", App.harvestItem);
+    App.$sellButton.addEventListener("click", () => App.sellItemModal.show());
+    App.$sellItemConfirmButton.addEventListener("click", App.sellItem);
     App.$processButton.addEventListener("click", App.processItem);
     App.$packButton.addEventListener("click", App.packItem);
-    App.$sellButton.addEventListener("click", App.sellItem);
     App.$buyButton.addEventListener("click", App.buyItem);
     App.$shipButton.addEventListener("click", App.shipItem);
     App.$receiveButton.addEventListener("click", App.receiveItem);
     App.$purchaseButton.addEventListener("click", App.purchaseItem);
+
+    App.$newAccountButton.addEventListener("click", () => App.newAccountModal.show());
+    App.$newAccountSaveButton.addEventListener("click", App.addNewAccount);
+  },
+
+  addNewAccount: () => {
+    const account = App.$newAccountValue.value;
+    const role = App.$newAccountRole.value;
+
+    const contractMethodsPerRole = {
+      'Farmer': App.SupplyChainContract.methods.addFarmer,
+      'Distributor': App.SupplyChainContract.methods.addDistributor,
+      'Retailer': App.SupplyChainContract.methods.addRetailer,
+      'Consumer': App.SupplyChainContract.methods.addConsumer,
+    }
+
+    console.log(account, role);
+    contractMethodsPerRole[role](account)
+    .send({from: App.account})
+    .then((res) => {
+      console.log(res);
+      App.newAccountModal.hide();
+      App.showSuccessToast(`${role} account was added successfully`);
+    })
+    .catch((err) => {
+      App.newAccountModal.hide();
+      App.showErrorToast(parseError(err));
+    });
   },
 
   harvestItem: function() {
@@ -301,17 +340,19 @@ const App = {
 
   sellItem: () => {
     const upc = parseInt(App.$itemUPC.value);
-    const price = Web3.utils.toWei("1", "ether"); // make modal
+    const price = App.$sellItemPrice.value
+    const priceToWei = Web3.utils.toWei(price, "ether"); // make modal
 
-    App.SupplyChainContract.methods.sellItem(upc, price)
+    App.SupplyChainContract.methods.sellItem(upc, priceToWei)
     .send({from: App.account})
     .then((res) => {
+      App.sellItemModal.hide();
       console.log(res);
       App.showSuccessToast('Item was successfully put for sale');
       App._fetchItem(upc);
     })
     .catch((err) => {
-      App.newHarvestModal.hide();
+      App.sellItemModal.hide();
       App.showErrorToast(parseError(err));
     });
   },
@@ -442,6 +483,13 @@ window.addEventListener("load", function() {
     // use MetaMask's provider
     App.web3 = new Web3(window.ethereum);
     window.ethereum.enable(); // get permission to access accounts
+
+    window.ethereum.on('accountsChanged', function (accounts) {
+      App.account = accounts[0];
+      console.log('Account changed: ', App.account);
+      App.updateCurrentAccountText(App.account);
+    });
+
   } else {
     console.warn(
       "No web3 detected. Falling back to http://127.0.0.1:8545. You should remove this fallback when you deploy live",
@@ -451,6 +499,7 @@ window.addEventListener("load", function() {
       new Web3.providers.HttpProvider("http://127.0.0.1:8545"),
     );
   }
+
 
   App.start();
 });

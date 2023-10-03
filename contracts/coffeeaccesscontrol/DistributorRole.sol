@@ -31,7 +31,7 @@ contract DistributorRole {
     }
 
     // Define a function 'addDistributor' that adds this role
-    function addDistributor(address account) public {
+    function addDistributor(address account) public onlyDistributor() {
         _addDistributor(account);
     }
 

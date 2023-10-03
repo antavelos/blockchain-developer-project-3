@@ -1,6 +1,10 @@
 // This script is designed to test the solidity smart contract - SuppyChain.sol -- and the various functions within
 // Declare a variable and assign the compiled smart contract artifact
 var SupplyChain = artifacts.require('SupplyChain')
+var FarmerRole = artifacts.require('FarmerRole')
+var DistributorRole = artifacts.require('DistributorRole')
+var RetailerRole = artifacts.require('RetailerRole')
+var ConsumerRole = artifacts.require('ConsumerRole')
 
 const oneEtherInWei = web3.utils.toWei("1", "ether");
 

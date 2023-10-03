@@ -13,165 +13,145 @@
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary bg-dark" aria-label="Thirteenth navbar example">
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container">
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample11" aria-controls="navbarsExample11" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="bi bi-cup-hot-fill me-1"></i>
+      <a class="navbar-brand" href="#"><strong>Fair Trade Coffee | On Ethereum Blockchain</strong></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-
-      <div class="collapse navbar-collapse d-lg-flex" id="navbarsExample11">
-        <i class="bi bi-cup-hot-fill" style="margin-right: 5px;"></i>
-        <a class="navbar-brand col-lg-3 me-0" href="#">Fair Trade Coffee | On Ethereum Blockchain</a>
-        <ul class="navbar-nav col-lg-6 justify-content-lg-center">
-        </ul>
-        <div class="d-lg-flex col-lg-3 justify-content-lg-end">
-          <div class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle dropend" href="#" data-bs-toggle="dropdown" aria-expanded="false">Register account</a>
+      <div class="collapse navbar-collapse" id="navbarScroll">
+        <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Actions
+            </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newFarmerModal">New Farmer</a></li>
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newDistributorModal">New Distributor</a></li>
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newRetailerModal">New Retailer</a></li>
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newConsumerModal">New Consumer</a></li>
+              <li><a id="newHarvestButton" class="dropdown-item" href="#"><i class="bi bi-cup-hot-fill me-2"></i>Add new harvest</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a id="newAccountButton" class="dropdown-item" href="#"><i class="bi bi-person-circle me-2"></i>Add new supply chain account</a></li>
             </ul>
-          </div>
-        </div>
+          </li>
+        </ul>
+        <form  class="d-flex me-4" role="search">
+          <input id="upcFetchInput" class="form-control me-2" type="number" placeholder="Fetch product by UPC" aria-label="Search">
+          <button id="upcFetchInputButton" class="btn btn-outline-primary">Fetch</button>
+        </form>
       </div>
     </div>
   </nav>
 
   <div class="container">
-    <div class="row gx-5">
-      <div class="col-4">
-        <form class="d-flex mt-3" role="search">
-          <input id="upcFetchInput" class="form-control me-2" type="number" placeholder="Fetch product by UPC" aria-label="Search">
-          <button id="upcFetchInputButton" class="btn btn-outline-primary">Fetch</button>
-        </form>
-      </div>
-      <div class="col-8">
-        <button id="newHarvestButton" type="button" class="btn btn-outline-primary mt-3 float-end">New harvest</button>
+    <div class="row mt-1">
+      <div class="col">
+        <code id="currentAccount" class="mt-3 fs-12" style="font-size: 0.85em;">Current active account: </code>
       </div>
     </div>
-    <div class="row mt-3 gx-5" style="background-color: #f8f8f8; padding-bottom: 20px; padding-top: 20px;">
-      <!-- <div id="itemLoading" hidden class="d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div> -->
+    <div class="row mt-1" style="background-color: #f8f8f8; padding-bottom: 20px; padding-top: 20px;">
       <div id="itemContent" class="col-9">
-        <h3 id="itemProductNotes" class="">Best beans for Espresso</h3>
-          <div class="input-group mb-3">
-            <span class="input-group-text">SKU</span>
-            <input id="itemSKU" type="text" class="form-control" value="" disabled>
-          </div>
-          <div class="input-group mb-3">
-            <span class="input-group-text">UPC</span>
-            <input id="itemUPC" type="text" class="form-control" value="" disabled>
-          </div>
-          <div class="input-group mb-3">
-            <span class="input-group-text">Price</span>
-            <input id="itemProductPrice" type="text" class="form-control" value="" disabled>
-            <span class="input-group-text">wei</span>
-          </div>
-          <div>
-            <button id="harvestButton" type="button" class="btn btn-outline-primary" disabled>Harvest</i></button>
-            <button id="processButton" type="button" class="btn btn-outline-primary" disabled>Process</i></button>
-            <button id="packButton" type="button" class="btn btn-outline-primary" disabled>Pack</i></button>
-            <button id="sellButton" type="button" class="btn btn-outline-primary" disabled>Sell</i></button>
-            <button id="buyButton" type="button" class="btn btn-outline-primary" disabled>Buy</i></button>
-            <button id="shipButton" type="button" class="btn btn-outline-primary" disabled>Ship</i></button>
-            <button id="receiveButton" type="button" class="btn btn-outline-primary" disabled>Receive</i></button>
-            <button id="purchaseButton" type="button" class="btn btn-outline-primary" disabled>Purchase</i></button>
-          </div>
-          <hr>
-          <div class="accordion mt-3" id="accordionPanelsStayOpenExample">
-            <div class="accordion-item">
-              <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
-                  Farm
-                </button>
-              </h2>
-              <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse hide">
-                <div class="accordion-body">
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">Name</span>
-                    <input id="itemFarmName" type="text" class="form-control" value="" disabled>
-                  </div>
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">Details</span>
-                    <input id="itemFarmInfo" type="text" class="form-control" value="" disabled>
-                  </div>
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">Latitude</span>
-                    <input id="itemFarmLatitude" type="text" class="form-control" value="" disabled>
-                  </div>
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">Longitude</span>
-                    <input id="itemFarmLongitude" type="text" class="form-control" value="" disabled>
-                  </div>
+        <h3 id="itemProductNotes"></h3>
+        <div class="input-group mb-3">
+          <span class="input-group-text">SKU</span>
+          <input id="itemSKU" type="text" class="form-control" value="" disabled>
+        </div>
+        <div class="input-group mb-3">
+          <span class="input-group-text">UPC</span>
+          <input id="itemUPC" type="text" class="form-control" value="" disabled>
+        </div>
+        <div class="input-group mb-3">
+          <span class="input-group-text">Price</span>
+          <input id="itemProductPrice" type="text" class="form-control" value="" disabled>
+          <span class="input-group-text">wei</span>
+        </div>
+        <div>
+          <button id="harvestButton" type="button" class="btn btn-outline-primary" disabled>Harvest</i></button>
+          <button id="processButton" type="button" class="btn btn-outline-primary" disabled>Process</i></button>
+          <button id="packButton" type="button" class="btn btn-outline-primary" disabled>Pack</i></button>
+          <button id="sellButton" type="button" class="btn btn-outline-primary" disabled>Sell</i></button>
+          <button id="buyButton" type="button" class="btn btn-outline-primary" disabled>Buy</i></button>
+          <button id="shipButton" type="button" class="btn btn-outline-primary" disabled>Ship</i></button>
+          <button id="receiveButton" type="button" class="btn btn-outline-primary" disabled>Receive</i></button>
+          <button id="purchaseButton" type="button" class="btn btn-outline-primary" disabled>Purchase</i></button>
+        </div>
+        <hr>
+        <div class="accordion mt-3" id="accordionPanelsStayOpenExample">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                Farm details
+              </button>
+            </h2>
+            <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse hide">
+              <div class="accordion-body">
+                <div class="input-group mb-3">
+                  <span class="input-group-text">Name</span>
+                  <input id="itemFarmName" type="text" class="form-control" value="" disabled>
+                </div>
+                <div class="input-group mb-3">
+                  <span class="input-group-text">Details</span>
+                  <input id="itemFarmInfo" type="text" class="form-control" value="" disabled>
+                </div>
+                <div class="input-group mb-3">
+                  <span class="input-group-text">Latitude</span>
+                  <input id="itemFarmLatitude" type="text" class="form-control" value="" disabled>
+                </div>
+                <div class="input-group mb-3">
+                  <span class="input-group-text">Longitude</span>
+                  <input id="itemFarmLongitude" type="text" class="form-control" value="" disabled>
                 </div>
               </div>
             </div>
-            <div class="accordion-item">
-              <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="true" aria-controls="panelsStayOpen-collapseTwo">
-                  Involved accounts
-                </button>
-              </h2>
-              <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse show">
-                <div class="accordion-body">
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">Origin Farmer</span>
-                    <input id="itemFarmer" type="text" class="form-control" value="" disabled>
-                    <span id="itemFarmerIsOwner" class="input-group-text" hidden>Owner</span>
-                  </div>
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">Distributor</span>
-                    <input id="itemDistributor" type="text" class="form-control" value="" disabled>
-                    <span id="itemDistributorIsOwner" class="input-group-text" hidden>Owner</span>
-                  </div>
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">Retailer</span>
-                    <input id="itemRetailer" type="text" class="form-control" value="" disabled>
-                    <span id="itemRetailerIsOwner" class="input-group-text" hidden>Owner</span>
-                  </div>
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">Consumer</span>
-                    <input id="itemConsumer" type="text" class="form-control" value="" disabled>
-                    <span id="itemConsumerIsOwner" class="input-group-text" hidden>Owner</span>
-                  </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="true" aria-controls="panelsStayOpen-collapseTwo">
+                Product accounts
+              </button>
+            </h2>
+            <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <div class="input-group mb-3">
+                  <span class="input-group-text">Origin Farmer</span>
+                  <input id="itemFarmer" type="text" class="form-control" value="" disabled>
+                  <span id="itemFarmerIsOwner" class="input-group-text" hidden>Owner</span>
+                </div>
+                <div class="input-group mb-3">
+                  <span class="input-group-text">Distributor</span>
+                  <input id="itemDistributor" type="text" class="form-control" value="" disabled>
+                  <span id="itemDistributorIsOwner" class="input-group-text" hidden>Owner</span>
+                </div>
+                <div class="input-group mb-3">
+                  <span class="input-group-text">Retailer</span>
+                  <input id="itemRetailer" type="text" class="form-control" value="" disabled>
+                  <span id="itemRetailerIsOwner" class="input-group-text" hidden>Owner</span>
+                </div>
+                <div class="input-group mb-3">
+                  <span class="input-group-text">Consumer</span>
+                  <input id="itemConsumer" type="text" class="form-control" value="" disabled>
+                  <span id="itemConsumerIsOwner" class="input-group-text" hidden>Owner</span>
                 </div>
               </div>
             </div>
-            <div class="accordion-item">
-              <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="true" aria-controls="panelsStayOpen-collapseThree">
-                  Transaction history
-                </button>
-              </h2>
-              <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse show">
-                <div class="accordion-body">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Event</th>
-                        <th scope="col">Transaction Hash</th>
-                      </tr>
-                    </thead>
-                    <tbody id="txHistoryTable">
-                      <!-- <tr>
-                        <th scope="row">1</th>
-                        <td>Harvested</td>
-                        <td>0x99c289eb2aacec289631a5ddf62cf27a63d4494f</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">2</th>
-                        <td>Processed</td>
-                        <td>0x99c289eb2aacec289631a5ddf62cf27a63d4494f</td>
-                      </tr> -->
-                    </tbody>
-                  </table>
-                </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="true" aria-controls="panelsStayOpen-collapseThree">
+                Transaction history
+              </button>
+            </h2>
+            <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Event</th>
+                      <th scope="col">Transaction Hash</th>
+                    </tr>
+                  </thead>
+                  <tbody id="txHistoryTable">
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -191,27 +171,27 @@
         <div class="modal-body">
           <div class="input-group mb-3">
             <span class="input-group-text">Product UPC</span>
-            <input id="newHarvestUPC" type="number" class="form-control" placeholder="i.e. 1" value="1">
+            <input id="newHarvestUPC" type="number" class="form-control" placeholder="i.e. 1">
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">Product notes</span>
-            <input id="newHarvestProductNotes" type="text" class="form-control" placeholder="i.e. Best beans for Espresso" value="Best beans for Espresso">
+            <input id="newHarvestProductNotes" type="text" class="form-control" placeholder="i.e. Best beans for Espresso">
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">Farm name</span>
-            <input id="newHarvestFarmName" type="text" class="form-control" placeholder="i.e. John Doe" value="John Doe">
+            <input id="newHarvestFarmName" type="text" class="form-control" placeholder="i.e. John Doe">
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">Farm details</span>
-            <input id="newHarvestFarmInfo" type="text" class="form-control" placeholder="i.e. Yarra Valley" value="Yarra Valley">
+            <input id="newHarvestFarmInfo" type="text" class="form-control" placeholder="i.e. Yarra Valley">
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">Latitude</span>
-            <input id="newHarvestFarmLatitude"type="text" class="form-control" placeholder="i.e. -38.239770" value="-38.239770">
+            <input id="newHarvestFarmLatitude"type="text" class="form-control" placeholder="i.e. -38.239770">
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">Longitude</span>
-            <input id="newHarvestFarmLongitude" type="text" class="form-control" placeholder="i.e. 144.341490" value="144.341490">
+            <input id="newHarvestFarmLongitude" type="text" class="form-control" placeholder="i.e. 144.341490">
           </div>
         </div>
         <div class="modal-footer">
@@ -222,89 +202,55 @@
     </div>
   </div>
 
-  <!-- New farmer modal -->
-  <div class="modal fade" id="newFarmerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newFarmerLabel" aria-hidden="true">
+  <!-- Sell item modal -->
+  <div class="modal fade" id="sellItemModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="sellItemModal" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="newFarmerLabel">New farmer</h1>
+          <h1 class="modal-title fs-5" id="sellItemModal">Sell item</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="input-group mb-3">
-            <span class="input-group-text">Account</span>
-            <input id="newFarmerAccount" type="text" class="form-control" placeholder="i.e. 0x99c289eb2aacec289631a5ddf62cf27a63d4494f">
+            <span class="input-group-text">Price</span>
+            <input id="sellItemPrice" type="number" class="form-control" placeholder="i.e. 0.1">
+            <span class="input-group-text">ETH</span>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-outline-primary" onclick="addNewFarmer">Add</button>
+          <button id="sellItemConfirmButton" type="button" class="btn btn-outline-primary">Sell</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- New distributor modal -->
-  <div class="modal fade" id="newDistributorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newDistributorLabel" aria-hidden="true">
+  <!-- New account modal -->
+  <div class="modal fade" id="newAccountModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newAccountLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="newDistributorLabel">New distributor</h1>
+          <h1 class="modal-title fs-5" id="newAccountLabel">New supply chain account</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="input-group mb-3">
             <span class="input-group-text">Account</span>
-            <input id="newDistributorAccount" type="text" class="form-control" placeholder="i.e. 0x99c289eb2aacec289631a5ddf62cf27a63d4494f">
+            <input id="newAccountValue" type="text" class="form-control" placeholder="0x27D8D15CbC94527cAdf5eC14B69519aE23288B95">
           </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-outline-primary" onclick="addNewDistributor">Add</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- New retailer modal -->
-  <div class="modal fade" id="newRetailerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newRetailerLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="newRetailerLabel">New retailer</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
           <div class="input-group mb-3">
-            <span class="input-group-text">Account</span>
-            <input id="newRetailerAccount" type="text" class="form-control" placeholder="i.e. 0x99c289eb2aacec289631a5ddf62cf27a63d4494f">
+            <span class="input-group-text">Role</span>
+            <select id="newAccountRole" class="form-select" aria-label="Default select example">
+              <option selected value="Farmer">Farmer</option>
+              <option value="Distributor">Distributor</option>
+              <option value="Retailer">Retailer</option>
+              <option value="Consumer">Consumer</option>
+            </select>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-outline-primary" onclick="addNewRetailer">Add</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- New consumer modal -->
-  <div class="modal fade" id="newConsumerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newConsumerLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="newConsumerLabel">New consumer</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="input-group mb-3">
-            <span class="input-group-text">Account</span>
-            <input id="newConsumerAccount" type="text" class="form-control" placeholder="i.e. 0x99c289eb2aacec289631a5ddf62cf27a63d4494f">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-outline-primary" onclick="addNewConsumer">Add</button>
+          <button id="newAccountSaveButton" type="button" class="btn btn-outline-primary">Add</button>
         </div>
       </div>
     </div>
