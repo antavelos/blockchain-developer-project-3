@@ -43,6 +43,7 @@ contract('SupplyChain', accounts => {
     const originFarmLongitude = "144.341490";
     const productID = sku + upc;
     const productNotes = "Best beans for Espresso";
+    const productImageIPFSHash = "QmXExS4BMc1YrH6iWERyryFcDWkvobxryXSwECLrcd7Y1H";
     const productPrice = oneEtherInWei;
     const distributorID = accounts[2];
     const retailerID = accounts[3];
@@ -105,6 +106,7 @@ contract('SupplyChain', accounts => {
                 originFarmLatitude,
                 originFarmLongitude,
                 productNotes,
+                productImageIPFSHash,
                 {from: originFarmerID}
             );
         });
@@ -120,20 +122,22 @@ contract('SupplyChain', accounts => {
                 originFarmLatitude,
                 originFarmLongitude,
                 productNotes,
+                productImageIPFSHash,
                 {from: consumerID}
-            )
-            .catch(err => {
-                assert.equal(err.message,  fullError("not a farmer"));
-            });
+                )
+                .catch(err => {
+                    assert.equal(err.message,  fullError("not a farmer"));
+                });
 
-            // harvest product as a farmer
-            await supplyChain.harvestItem(
-                upc,
-                originFarmName,
-                originFarmInformation,
-                originFarmLatitude,
-                originFarmLongitude,
-                productNotes,
+                // harvest product as a farmer
+                await supplyChain.harvestItem(
+                    upc,
+                    originFarmName,
+                    originFarmInformation,
+                    originFarmLatitude,
+                    originFarmLongitude,
+                    productNotes,
+                    productImageIPFSHash,
                 {from: originFarmerID}
             );
 
@@ -164,6 +168,7 @@ contract('SupplyChain', accounts => {
                 originFarmLatitude,
                 originFarmLongitude,
                 productNotes,
+                productImageIPFSHash,
                 {from: originFarmerID}
             )
             .catch(err => {

@@ -1,7 +1,14 @@
 import Web3 from "web3";
+import axios from 'axios';
 import supplyChainArtifact from "../../build/contracts/SupplyChain.json";
+import secrets from "../secrets.json";
 
 const getById = (id) => document.getElementById(id);
+
+const INFURA_IPFS_API_URL = 'https://ipfs.infura.io:5001/api/v0';
+const INFURA_IPFS_GATEWAY_URL = 'https://udacity-blockchain-developer.infura-ipfs.io/ipfs'
+const PROJECT_ID = secrets.PROJECT_ID;
+const PROJECT_SECRET = secrets.PROJECT_SECRET;
 
 const parseError = err => {
   try {
@@ -66,7 +73,7 @@ const App = {
   emptyAddress: "0x0000000000000000000000000000000000000000",
   web3: null,
   account: null,
-  meta: null,
+  accountRoles: [],
 
   // elements
   $currentAccount: getById("currentAccount"),
@@ -97,6 +104,7 @@ const App = {
   $newHarvestFarmInfo: getById("newHarvestFarmInfo"),
   $newHarvestLatitude: getById("newHarvestFarmLatitude"),
   $newHarvestLongitude: getById("newHarvestFarmLongitude"),
+  $newHarvestImage: getById("newHarvestImage"),
 
   // item details elements
   $itemContent: getById('itemContent'),
@@ -117,6 +125,7 @@ const App = {
   $itemRetailerIsOwner: getById('itemRetailerIsOwner'),
   $itemConsumerIsOwner: getById('itemConsumerIsOwner'),
   $txHistoryTable: getById('txHistoryTable'),
+  $itemImage: getById('itemImage'),
 
   // action buttons
   actionButtons: {
@@ -172,6 +181,10 @@ const App = {
     App.$itemDistributor.value = item.distributorID;
     App.$itemRetailer.value = item.retailerID;
     App.$itemConsumer.value = item.consumerID;
+    App.$itemImage.src = './static/image-placeholder.jpg';
+    if (item.productImageIPFSHash) {
+      App.$itemImage.src = `${INFURA_IPFS_GATEWAY_URL}/${item.productImageIPFSHash}`;
+    }
 
     App.$itemFarmerIsOwner.hidden = item.ownerID === App.emptyAddress || item.originFarmerID !== item.ownerID;
     App.$itemDistributorIsOwner.hidden = item.ownerID === App.emptyAddress || item.distributorID !== item.ownerID;
@@ -206,8 +219,6 @@ const App = {
           supplyChainArtifact.abi,
           deployedNetwork.address,
         );
-
-
       } catch (error) {
         console.error("Could not connect to contract or chain.", error);
       }
@@ -215,10 +226,10 @@ const App = {
       // get accounts
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       App.account = accounts[0];
-      App.updateCurrentAccountText(App.account);
+      App.updateCurrentAccountRoles(App.account);
   },
 
-  updateCurrentAccountText: async (account) => {
+  getCurrentRoles: async (account) => {
     let roles = [];
     if (await App.SupplyChainContract.methods.isOwner().call({from: account})) {
       roles.push('Owner');
@@ -236,6 +247,15 @@ const App = {
       roles.push('Consumer');
     }
 
+    return roles;
+  },
+
+  updateCurrentAccountRoles: async (account) => {
+    const roles = await App.getCurrentRoles(account);
+    App.updateCurrentAccountText(account, roles);
+  },
+
+  updateCurrentAccountText: async (account, roles) => {
     App.$currentAccount.innerHTML = `Current active account: <strong>${account}</strong> - ${roles.join(' | ')}`;
   },
 
@@ -254,6 +274,20 @@ const App = {
 
     App.$newAccountButton.addEventListener("click", () => App.newAccountModal.show());
     App.$newAccountSaveButton.addEventListener("click", App.addNewAccount);
+  },
+
+  uploadImage(imageFile) {
+    return axios.post(`${INFURA_IPFS_API_URL}/add?pin=false`, {
+      file: imageFile
+    }, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      auth: {
+        username: PROJECT_ID,
+        password: PROJECT_SECRET
+      }
+    });
   },
 
   addNewAccount: () => {
@@ -281,9 +315,19 @@ const App = {
     });
   },
 
-  harvestItem: function() {
+  harvestItem: async function() {
     const upc = parseInt(App.$newHarvestUPC.value);
+    const imageFile = App.$newHarvestImage.files[0];
+    const imageIPFSHash = '';
 
+    if (imageFile) {
+      res = await App.uploadImage(imageFile);
+      if (res.status != 200) {
+        App.showErrorToast('Failed to load image to IPFS');
+      } else {
+        imageIPFSHash = res.data.Hash;
+      }
+    }
     App.SupplyChainContract.methods.harvestItem(
       upc,
       App.$newHarvestFarmName.value,
@@ -291,6 +335,7 @@ const App = {
       App.$newHarvestLatitude.value,
       App.$newHarvestLongitude.value,
       App.$newHarvestProductNotes.value,
+      imageIPFSHash,
     )
     .send({from: App.account})
     .then((res) => {
@@ -300,8 +345,9 @@ const App = {
       App._fetchItem(upc);
     })
     .catch((err) => {
+      console.log('Blockchain');
       App.newHarvestModal.hide();
-      console.error(err)
+      console.error(err);
       App.showErrorToast(parseError(err));
     });
   },
@@ -487,7 +533,7 @@ window.addEventListener("load", function() {
     window.ethereum.on('accountsChanged', function (accounts) {
       App.account = accounts[0];
       console.log('Account changed: ', App.account);
-      App.updateCurrentAccountText(App.account);
+      App.updateCurrentAccountRoles(App.account);
     });
 
   } else {

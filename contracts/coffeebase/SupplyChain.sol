@@ -73,6 +73,9 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
         // Product Notes
         string productNotes;
 
+        // Product Image IPFS hash
+        string productImageIPFSHash;
+
         // Product Price
         uint productPrice;
 
@@ -207,7 +210,8 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
         string _originFarmInformation,
         string _originFarmLatitude,
         string _originFarmLongitude,
-        string _productNotes
+        string _productNotes,
+        string _productImageIPFSHash
     )
         public onlyFarmer
     {
@@ -226,6 +230,7 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
             originFarmLongitude: _originFarmLongitude,
             productID: sku + _upc,
             productNotes: _productNotes,
+            productImageIPFSHash: _productImageIPFSHash,
             productPrice: 0,
             itemState: State.Harvested,
             distributorID: 0x0,
