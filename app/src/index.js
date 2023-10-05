@@ -10,6 +10,14 @@ const INFURA_IPFS_GATEWAY_URL = 'https://udacity-blockchain-developer.infura-ipf
 const PROJECT_ID = secrets.PROJECT_ID;
 const PROJECT_SECRET = secrets.PROJECT_SECRET;
 
+const AccountRoles = {
+  Owner: 'Owner',
+  Farmer: 'Farmer',
+  Distributor: 'Distributor',
+  Retailer: 'Retailer',
+  Consumer: 'Consumer'
+};
+
 const parseError = err => {
   try {
     return err.message.split('message')[1].split('code')[0].slice(3).slice(0, -3)
@@ -19,25 +27,32 @@ const parseError = err => {
 };
 
 class ActionButton{
-  constructor(el, defaultState, actionName, actionCompletedName) {
+  constructor(el, defaultState, actionName, actionCompletedName, allowedRoles) {
     this.el = el;
     this.defaultState = defaultState;
     this.actionName = actionName;
     this.actionCompletedName = actionCompletedName;
+    this.allowedRoles = allowedRoles;
   }
 
-  update(state) {
-    this.reset();
-    if (state == this.defaultState - 1) { this.enable(); }
+  update(state, roles, isOriginAccount) {
+    if (state == this.defaultState - 1) {
+      const roleIntersection = this.allowedRoles.filter(r => roles.includes(r));
+
+      roleIntersection.length > 0 && isOriginAccount ? this.enable() : this.reset();
+    } else {
+      this.reset();
+    }
     if (state >= this.defaultState) { this.markCompleted(); }
   }
 
   reset() {
     this.el.innerHTML = '';
-    this.el.appendChild(document.createTextNode(this.actionName + ' '));
+    this.el.disabled = true;
     this.el.classList.remove('btn-primary');
     this.el.classList.add('btn-outline-primary');
-    this.el.disabled = true;
+    this.el.appendChild(document.createTextNode(this.actionCompletedName + ' '));
+    this.el.appendChild(this.createIncompletedIcon());
   }
 
   enable() {
@@ -48,24 +63,27 @@ class ActionButton{
     this.el.disabled = false;
   }
 
-  disable() {
-    this.el.innerHTML = '';
-    this.el.appendChild(document.createTextNode(this.actionName + ' '));
-    this.el.disabled = true;
+  createIncompletedIcon() {
+    let node = document.createElement("i");
+    node.classList.add('bi');
+    node.classList.add('bi-square');
+    return node;
   }
 
-  createIcon() {
-    const node = document.createElement("i");
+  createCompletedIcon() {
+    let node = document.createElement("i");
     node.classList.add('bi');
-    node.classList.add('bi-check-circle-fill');
+    node.classList.add('bi-check-square');
     return node;
   }
 
   markCompleted() {
     this.el.innerHTML = '';
     this.el.disabled = true;
+    this.el.classList.remove('btn-primary');
+    this.el.classList.add('btn-outline-primary');
     this.el.appendChild(document.createTextNode(this.actionCompletedName + ' '));
-    this.el.appendChild(this.createIcon());
+    this.el.appendChild(this.createCompletedIcon());
   }
 };
 
@@ -129,14 +147,14 @@ const App = {
 
   // action buttons
   actionButtons: {
-    harvestButton: new ActionButton(getById('harvestButton'), 0, 'Harvest', 'Harvested'),
-    processButton: new ActionButton(getById('processButton'), 1, 'Process', 'Processed'),
-    packButton: new ActionButton(getById('packButton'), 2, 'Pack', 'Packed'),
-    sellButton: new ActionButton(getById('sellButton'), 3, 'Sell', 'For sale'),
-    buyButton: new ActionButton(getById('buyButton'), 4, 'Buy', 'Bought'),
-    shipButton: new ActionButton(getById('shipButton'), 5, 'Ship', 'Shipped'),
-    receiveButton: new ActionButton(getById('receiveButton'), 6, 'Receive', 'Received'),
-    purchaseButton: new ActionButton(getById('purchaseButton'), 7, 'Purchase', 'Purchased'),
+    harvestButton: new ActionButton(getById('harvestButton'), 0, 'Harvest', 'Harvested', [AccountRoles.Farmer]),
+    processButton: new ActionButton(getById('processButton'), 1, 'Process', 'Processed', [AccountRoles.Farmer]),
+    packButton: new ActionButton(getById('packButton'), 2, 'Pack', 'Packed', [AccountRoles.Farmer]),
+    sellButton: new ActionButton(getById('sellButton'), 3, 'Sell', 'For sale', [AccountRoles.Farmer]),
+    buyButton: new ActionButton(getById('buyButton'), 4, 'Buy', 'Bought', [AccountRoles.Distributor]),
+    shipButton: new ActionButton(getById('shipButton'), 5, 'Ship', 'Shipped', [AccountRoles.Distributor]),
+    receiveButton: new ActionButton(getById('receiveButton'), 6, 'Receive', 'Received', [AccountRoles.Retailer]),
+    purchaseButton: new ActionButton(getById('purchaseButton'), 7, 'Purchase', 'Purchased', [AccountRoles.Consumer]),
   },
 
   // action button elements
@@ -192,9 +210,26 @@ const App = {
     App.$itemConsumerIsOwner.hidden = item.ownerID === App.emptyAddress || item.consumerID !== item.ownerID;
 
     const itemExists = item.sku != 0;
-    const buttons = Object.values(App.actionButtons);
 
-    itemExists ? buttons.forEach(button => button.update(parseInt(item.itemState))) : buttons.forEach(button => button.reset());
+    if (!itemExists) {
+      Object.values(App.actionButtons).forEach(button => button.reset());
+      return;
+    }
+
+    const currentAccount = App.account.toLowerCase();
+    const farmerId = item.originFarmerID.toLowerCase();
+    const distributorId = item.distributorID.toLowerCase();
+    const state = parseInt(item.itemState);
+
+    App.actionButtons.harvestButton.update(state, App.accountRoles, currentAccount == farmerId);
+    App.actionButtons.processButton.update(state, App.accountRoles, currentAccount == farmerId);
+    App.actionButtons.packButton.update(state, App.accountRoles, currentAccount == farmerId);
+    App.actionButtons.sellButton.update(state, App.accountRoles, currentAccount == farmerId);
+    App.actionButtons.buyButton.update(state, App.accountRoles, true);
+    App.actionButtons.shipButton.update(state, App.accountRoles, currentAccount == distributorId);
+    App.actionButtons.receiveButton.update(state, App.accountRoles, true);
+    App.actionButtons.purchaseButton.update(state, App.accountRoles, true);
+
   },
 
   showTxHistoryEvent(rowIdx, eventName, txHash) {
@@ -232,27 +267,27 @@ const App = {
   getCurrentRoles: async (account) => {
     let roles = [];
     if (await App.SupplyChainContract.methods.isOwner().call({from: account})) {
-      roles.push('Owner');
+      roles.push(AccountRoles.Owner);
     }
     if (await App.SupplyChainContract.methods.isFarmer(account).call({from: account})) {
-      roles.push('Farmer');
+      roles.push(AccountRoles.Farmer);
     }
     if (await App.SupplyChainContract.methods.isDistributor(account).call({from: account})) {
-      roles.push('Distributor');
+      roles.push(AccountRoles.Distributor);
     }
     if (await App.SupplyChainContract.methods.isRetailer(account).call({from: account})) {
-      roles.push('Retailer')
+      roles.push(AccountRoles.Retailer)
     }
     if (await App.SupplyChainContract.methods.isConsumer(account).call({from: account})) {
-      roles.push('Consumer');
+      roles.push(AccountRoles.Consumer);
     }
 
     return roles;
   },
 
   updateCurrentAccountRoles: async (account) => {
-    const roles = await App.getCurrentRoles(account);
-    App.updateCurrentAccountText(account, roles);
+    App.accountRoles = await App.getCurrentRoles(account);
+    App.updateCurrentAccountText(account, App.accountRoles);
   },
 
   updateCurrentAccountText: async (account, roles) => {
@@ -301,7 +336,6 @@ const App = {
       'Consumer': App.SupplyChainContract.methods.addConsumer,
     }
 
-    console.log(account, role);
     contractMethodsPerRole[role](account)
     .send({from: App.account})
     .then((res) => {
@@ -345,7 +379,6 @@ const App = {
       App._fetchItem(upc);
     })
     .catch((err) => {
-      console.log('Blockchain');
       App.newHarvestModal.hide();
       console.error(err);
       App.showErrorToast(parseError(err));
@@ -468,7 +501,6 @@ const App = {
   },
 
   fetchItem: () => {
-    event.preventDefault();
     const upc = parseInt(App.$upcFetchInput.value);
     App._fetchItem(upc);
   },
@@ -476,8 +508,8 @@ const App = {
   _fetchItem: (upc) => {
     App.SupplyChainContract.methods.fetchItem(upc).call()
     .then(res => {
+      console.log('Fetched item: ', res);
       App.currentItem = res;
-      console.log(res);
       App.showItem(App.currentItem);
       App.fetchItemEventsHistory(upc);
     }).catch(err => {
@@ -506,7 +538,6 @@ const App = {
       events = events.filter(e => e.returnValues.upc == upc);
       if (events.length > 0) {
         App.showTxHistoryEvent(count, eventName, events[0].transactionHash);
-        console.log([eventName, events[0].transactionHash]);
       }
       count += 1;
     })
@@ -515,8 +546,6 @@ const App = {
   start: async function() {
     await App.initSupplyChain();
 
-    App._fetchItem(1);
-
     App.bindElementEvents();
   },
 
@@ -524,16 +553,17 @@ const App = {
 
 window.App = App;
 
-window.addEventListener("load", function() {
+window.addEventListener("load", () => {
   if (window.ethereum) {
     // use MetaMask's provider
     App.web3 = new Web3(window.ethereum);
     window.ethereum.enable(); // get permission to access accounts
 
-    window.ethereum.on('accountsChanged', function (accounts) {
+    window.ethereum.on('accountsChanged', async (accounts) => {
       App.account = accounts[0];
       console.log('Account changed: ', App.account);
-      App.updateCurrentAccountRoles(App.account);
+      await App.updateCurrentAccountRoles(App.account);
+      App.fetchItem();
     });
 
   } else {
