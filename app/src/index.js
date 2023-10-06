@@ -440,7 +440,7 @@ const App = {
     const upc = parseInt(App.$itemUPC.value);
 
     App.SupplyChainContract.methods.buyItem(upc)
-    .send({from: App.account, value: Web3.utils.toWei("1", "ether")})
+    .send({from: App.account, value: App.currentItem.productPrice})
     .then((res) => {
       console.log(res);
       App.showSuccessToast('Item was successfully bought');
