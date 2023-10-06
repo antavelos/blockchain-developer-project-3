@@ -27,7 +27,7 @@
               Actions
             </a>
             <ul class="dropdown-menu">
-              <li><a id="newHarvestButton" class="dropdown-item" href="#"><i class="bi bi-cup-hot-fill me-2"></i>Add new harvest</a></li>
+              <li><a id="newHarvestButton" class="dropdown-item disabled" href="#"><i class="bi bi-cup-hot-fill me-2"></i>Add new harvest</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a id="newAccountButton" class="dropdown-item" href="#"><i class="bi bi-person-circle me-2"></i>Add new supply chain account</a></li>
             </ul>
@@ -61,7 +61,7 @@
         <div class="input-group mb-3">
           <span class="input-group-text">Price</span>
           <input id="itemProductPrice" type="text" class="form-control" value="" disabled>
-          <span class="input-group-text">wei</span>
+          <span class="input-group-text">ETH</span>
         </div>
         <div>
           <button id="harvestButton" type="button" class="btn btn-outline-primary" disabled>Harvested</button>
@@ -243,12 +243,12 @@
         <div class="modal-body">
           <div class="input-group mb-3">
             <span class="input-group-text">Account</span>
-            <input id="newAccountValue" type="text" class="form-control" placeholder="0x27D8D15CbC94527cAdf5eC14B69519aE23288B95">
+            <input id="newAccountValue" type="text" class="form-control" placeholder="i.e. 0x27D8D15CbC94527cAdf5eC14B69519aE23288B95">
           </div>
           <div class="input-group mb-3">
             <span class="input-group-text">Role</span>
             <select id="newAccountRole" class="form-select" aria-label="Default select example">
-              <option selected value="Farmer">Farmer</option>
+              <option value="Farmer">Farmer</option>
               <option value="Distributor">Distributor</option>
               <option value="Retailer">Retailer</option>
               <option value="Consumer">Consumer</option>

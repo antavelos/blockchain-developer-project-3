@@ -146,7 +146,7 @@ const App = {
   $itemImage: getById('itemImage'),
 
   // action buttons
-  actionButtons: {
+  itemButtons: {
     harvestButton: new ActionButton(getById('harvestButton'), 0, 'Harvest', 'Harvested', [AccountRoles.Farmer]),
     processButton: new ActionButton(getById('processButton'), 1, 'Process', 'Processed', [AccountRoles.Farmer]),
     packButton: new ActionButton(getById('packButton'), 2, 'Pack', 'Packed', [AccountRoles.Farmer]),
@@ -186,10 +186,10 @@ const App = {
     App.successToast.show();
   },
 
-  showItem: (item) => {
+  updateItem: (item) => {
     App.$itemSKU.value = item.sku;
     App.$itemUPC.value = item.upc;
-    App.$itemProductPrice.value = item.productPrice;
+    App.$itemProductPrice.value = Web3.utils.fromWei(item.productPrice)
     App.$itemProductNotes.innerHTML = item.productNotes;
     App.$itemFarmName.value = item.originFarmName;
     App.$itemFarmInfo.value = item.originFarmInformation;
@@ -209,10 +209,14 @@ const App = {
     App.$itemRetailerIsOwner.hidden = item.ownerID === App.emptyAddress || item.retailerID !== item.ownerID;
     App.$itemConsumerIsOwner.hidden = item.ownerID === App.emptyAddress || item.consumerID !== item.ownerID;
 
-    const itemExists = item.sku != 0;
+    App.updateActionButtons(item);
+  },
+
+  updateActionButtons(item) {
+    const itemExists = item.sku != undefined && item.sku != 0;
 
     if (!itemExists) {
-      Object.values(App.actionButtons).forEach(button => button.reset());
+      Object.values(App.itemButtons).forEach(button => button.reset());
       return;
     }
 
@@ -221,15 +225,14 @@ const App = {
     const distributorId = item.distributorID.toLowerCase();
     const state = parseInt(item.itemState);
 
-    App.actionButtons.harvestButton.update(state, App.accountRoles, currentAccount == farmerId);
-    App.actionButtons.processButton.update(state, App.accountRoles, currentAccount == farmerId);
-    App.actionButtons.packButton.update(state, App.accountRoles, currentAccount == farmerId);
-    App.actionButtons.sellButton.update(state, App.accountRoles, currentAccount == farmerId);
-    App.actionButtons.buyButton.update(state, App.accountRoles, true);
-    App.actionButtons.shipButton.update(state, App.accountRoles, currentAccount == distributorId);
-    App.actionButtons.receiveButton.update(state, App.accountRoles, true);
-    App.actionButtons.purchaseButton.update(state, App.accountRoles, true);
-
+    App.itemButtons.harvestButton.update(state, App.accountRoles, currentAccount == farmerId);
+    App.itemButtons.processButton.update(state, App.accountRoles, currentAccount == farmerId);
+    App.itemButtons.packButton.update(state, App.accountRoles, currentAccount == farmerId);
+    App.itemButtons.sellButton.update(state, App.accountRoles, currentAccount == farmerId);
+    App.itemButtons.buyButton.update(state, App.accountRoles, true);
+    App.itemButtons.shipButton.update(state, App.accountRoles, currentAccount == distributorId);
+    App.itemButtons.receiveButton.update(state, App.accountRoles, true);
+    App.itemButtons.purchaseButton.update(state, App.accountRoles, true);
   },
 
   showTxHistoryEvent(rowIdx, eventName, txHash) {
@@ -287,7 +290,33 @@ const App = {
 
   updateCurrentAccountRoles: async (account) => {
     App.accountRoles = await App.getCurrentRoles(account);
-    App.updateCurrentAccountText(account, App.accountRoles);
+    App.adjustAccountDisplays(account, App.accountRoles);
+  },
+
+  adjustAccountDisplays(account, roles) {
+    App.updateCurrentAccountText(account, roles);
+    App.updateActionButtons(App.currentItem);
+    App.updateNewHarvestButton(roles);
+    App.updateNewAccountRoleOptions(roles);
+  },
+
+  updateNewHarvestButton(roles) {
+    roles.includes(AccountRoles.Farmer)
+      ? App.$newHarvestButton.classList.remove('disabled')
+      : App.$newHarvestButton.classList.add('disabled');
+  },
+
+  updateNewAccountRoleOptions(roles) {
+    App.$newAccountRole.innerHTML = '';
+    roles.forEach(role => {
+      if (role == AccountRoles.Owner) {
+        return;
+      }
+      let opt = document.createElement('option');
+      opt.value = role;
+      opt.innerHTML = role;
+      App.$newAccountRole.appendChild(opt);
+    });
   },
 
   updateCurrentAccountText: async (account, roles) => {
@@ -510,7 +539,7 @@ const App = {
     .then(res => {
       console.log('Fetched item: ', res);
       App.currentItem = res;
-      App.showItem(App.currentItem);
+      App.updateItem(App.currentItem);
       App.fetchItemEventsHistory(upc);
     }).catch(err => {
       console.error(err);
@@ -563,7 +592,7 @@ window.addEventListener("load", () => {
       App.account = accounts[0];
       console.log('Account changed: ', App.account);
       await App.updateCurrentAccountRoles(App.account);
-      App.fetchItem();
+      // App.fetchItem();
     });
 
   } else {
