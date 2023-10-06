@@ -67,19 +67,6 @@ contract('SupplyChain', accounts => {
         assert.equal(item.productNotes, productNotes, 'Error: Missing or Invalid productNotes');
     }
 
-    ///Available Accounts
-    ///==================
-    ///(0) 0x27d8d15cbc94527cadf5ec14b69519ae23288b95
-    ///(1) 0x018c2dabef4904ecbd7118350a0c54dbeae3549a
-    ///(2) 0xce5144391b4ab80668965f2cc4f2cc102380ef0a
-    ///(3) 0x460c31107dd048e34971e57da2f99f659add4f02
-    ///(4) 0xd37b7b8c62be2fdde8daa9816483aebdbd356088
-    ///(5) 0x27f184bdc0e7a931b507ddd689d76dba10514bcb
-    ///(6) 0xfe0df793060c49edca5ac9c104dd8e3375349978
-    ///(7) 0xbd58a85c96cc6727859d853086fe8560bc137632
-    ///(8) 0xe07b5ee5f738b2f87f88b99aac9c64ff1e0c7917
-    ///(9) 0xbd3ff2e3aded055244d66544c9c059fa0851da44
-
     console.log("ganache-cli accounts used here...")
     console.log("Contract Owner: accounts[0] ", accounts[0])
     console.log("Farmer: accounts[1] ", accounts[1])
@@ -174,9 +161,8 @@ contract('SupplyChain', accounts => {
             .catch(err => {
                 assert.equal(err.message, fullError("upc already exists"));
             });
-        })
+        });
 
-        // 2nd Test
         it("processItem(): allows a farmer to process coffee", async() => {
             const supplyChain = await SupplyChain.deployed();
 
@@ -189,7 +175,7 @@ contract('SupplyChain', accounts => {
             // not original farmer account is not allowed
             supplyChain.processItem(upc, {from: altFarmerID})
             .catch(err => {
-                assert.equal(err.message, fullError("not the original farmer"));
+                assert.equal(err.message, fullError("sender is not the original farmer"));
             });
 
             // process item as a farmer
@@ -213,9 +199,8 @@ contract('SupplyChain', accounts => {
                 assert.equal(events[0].logIndex, 0);
                 assert.equal(parseInt(events[0].returnValues['upc']), upc);
             });
-        })
+        });
 
-        // 3rd Test
         it("packItem(): allows a farmer to pack coffee", async() => {
             const supplyChain = await SupplyChain.deployed();
 
@@ -228,7 +213,7 @@ contract('SupplyChain', accounts => {
             // not original farmer account is not allowed
             supplyChain.packItem(upc, {from: altFarmerID})
             .catch(err => {
-                assert.equal(err.message, fullError("not the original farmer"));
+                assert.equal(err.message, fullError("sender is not the original farmer"));
             });
 
             // cannot pack unprocessed item
@@ -258,9 +243,8 @@ contract('SupplyChain', accounts => {
                 assert.equal(events[0].logIndex, 0);
                 assert.equal(parseInt(events[0].returnValues['upc']), upc);
             });
-        })
+        });
 
-        // 4th Test
         it("sellItem(): allows a farmer to sell coffee", async() => {
             const supplyChain = await SupplyChain.deployed();
 
@@ -273,7 +257,7 @@ contract('SupplyChain', accounts => {
             // not original farmer account is not allowed
             supplyChain.sellItem(upc, productPrice, {from: altFarmerID})
             .catch(err => {
-                assert.equal(err.message, fullError("not the original farmer"));
+                assert.equal(err.message, fullError("sender is not the original farmer"));
             });
 
             // cannot sell unpacked item
@@ -303,9 +287,8 @@ contract('SupplyChain', accounts => {
                 assert.equal(events[0].logIndex, 0);
                 assert.equal(parseInt(events[0].returnValues['upc']), upc);
             });
-        })
+        });
 
-        // 5th Test
         it("buyItem(): allows a distributor to buy coffee", async() => {
             const supplyChain = await SupplyChain.deployed();
 
@@ -342,16 +325,15 @@ contract('SupplyChain', accounts => {
                 assert.equal(events[0].logIndex, 0);
                 assert.equal(parseInt(events[0].returnValues['upc']), upc);
             });
-        })
+        });
 
-        // 6th Test
         it("shipItem(): allows a distributor to ship coffee", async() => {
             const supplyChain = await SupplyChain.deployed();
 
             // not original distributor account is not allowed
             supplyChain.shipItem(upc, {from: altDistributorID})
             .catch(err => {
-                assert.equal(err.message, fullError("not the original distributor"));
+                assert.equal(err.message, fullError("sender is not the original distributor"));
             });
 
             // ship item as the original distributor
@@ -375,9 +357,8 @@ contract('SupplyChain', accounts => {
                 assert.equal(events[0].logIndex, 0);
                 assert.equal(parseInt(events[0].returnValues['upc']), upc);
             });
-        })
+        });
 
-        // 7th Test
         it("receiveItem(): allows a retailer to mark coffee received", async() => {
             const supplyChain = await SupplyChain.deployed();
 
@@ -414,9 +395,8 @@ contract('SupplyChain', accounts => {
                 assert.equal(events[0].logIndex, 0);
                 assert.equal(parseInt(events[0].returnValues['upc']), upc);
             });
-        })
+        });
 
-        // 8th Test
         it("purchaseItem(): allows a consumer to purchase coffee", async() => {
             const supplyChain = await SupplyChain.deployed();
 
@@ -453,28 +433,21 @@ contract('SupplyChain', accounts => {
                 assert.equal(events[0].logIndex, 0);
                 assert.equal(parseInt(events[0].returnValues['upc']), upc);
             });
-        })
+        });
 
-        // 9th Test
-        it("fetchItemBufferOne(): allows anyone to fetch item details from blockchain", async() => {
+        it("fetchItem: allows anyone to fetch item details from blockchain", async() => {
             const supplyChain = await SupplyChain.deployed();
 
-            // Retrieve the just now saved item from blockchain by calling function fetchItem()
+            const fetchedItem = await supplyChain.fetchItem.call(upc);
 
-
-            // Verify the result set:
-
-        })
-
-        // 10th Test
-        it("fetchItemBufferTwo(): allows anyone to fetch item details from blockchain", async() => {
-            const supplyChain = await SupplyChain.deployed();
-
-            // Retrieve the just now saved item from blockchain by calling function fetchItem()
-
-
-            // Verify the result set:
-
+            assertUnaffectedItemAttrs(fetchedItem);
+            assert.equal(fetchedItem.ownerID, consumerID, 'Error: Missing or Invalid ownerID');
+            assert.equal(fetchedItem.originFarmerID, originFarmerID, 'Error: Missing or Invalid originFarmerID');
+            assert.equal(fetchedItem.productPrice, productPrice, 'Error: Missing or Invalid productPrice');
+            assert.equal(fetchedItem.distributorID, distributorID, 'Error: Missing or Invalid distributorID');
+            assert.equal(fetchedItem.retailerID, retailerID, 'Error: Missing or Invalid retailerID');
+            assert.equal(fetchedItem.consumerID, consumerID, 'Error: Missing or Invalid consumerID');
+            assert.equal(stateToString(fetchedItem.itemState), 'Purchased', 'Error: Invalid item State');
         })
     });
 });

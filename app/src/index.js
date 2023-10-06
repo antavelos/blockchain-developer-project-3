@@ -6,9 +6,10 @@ import secrets from "../secrets.json";
 const getById = (id) => document.getElementById(id);
 
 const INFURA_IPFS_API_URL = 'https://ipfs.infura.io:5001/api/v0';
-const INFURA_IPFS_GATEWAY_URL = 'https://udacity-blockchain-developer.infura-ipfs.io/ipfs'
 const PROJECT_ID = secrets.PROJECT_ID;
 const PROJECT_SECRET = secrets.PROJECT_SECRET;
+const INFURA_IPFS_GATEWAY_URL = `${secrets.DEDICATED_GATEWAY_SUBDOMAIN}/ipfs`;
+
 
 const AccountRoles = {
   Owner: 'Owner',
@@ -381,10 +382,10 @@ const App = {
   harvestItem: async function() {
     const upc = parseInt(App.$newHarvestUPC.value);
     const imageFile = App.$newHarvestImage.files[0];
-    const imageIPFSHash = '';
+    let imageIPFSHash = '';
 
     if (imageFile) {
-      res = await App.uploadImage(imageFile);
+      const res = await App.uploadImage(imageFile);
       if (res.status != 200) {
         App.showErrorToast('Failed to load image to IPFS');
       } else {
