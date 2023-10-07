@@ -68,8 +68,9 @@ module.exports = {
     sepolia: {
       provider: () => new HDWalletProvider(MNEMONIC, `https://sepolia.infura.io/v3/${PROJECT_ID}`),
       network_id: 11155111,
-      gas: 4500000,
-      gasPrice: 10000000000,
+      gas: 4465030,
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true
     }
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
